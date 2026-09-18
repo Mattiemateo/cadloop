@@ -1,0 +1,15 @@
+{
+  "wheel": "cadloop-0.1.0-py3-none-any.whl",
+  "sha256": "19db48ff48b86f6d447750e80e279f821b2c7cce4318e5ca5cfeddbe7a608cc5",
+  "zip_integrity": "passed",
+  "templates": [
+    "cadloop/templates/plate_stack/requirements.json",
+    "cadloop/templates/plate_stack/design/model_build123d.py",
+    "cadloop/templates/plate_stack/design/model_cadquery.py",
+    "cadloop/templates/plate_stack/design/parameters.json"
+  ],
+  "entrypoint_present": true,
+  "bytecode_excluded": true,
+  "latest_source_included": true,
+  "cross_platform_execution_tested": false
+}

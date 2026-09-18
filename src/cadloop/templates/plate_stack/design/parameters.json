@@ -1,0 +1,8 @@
+{
+  "plate_thickness_mm": 6.0,
+  "bore_diameter_mm": 8.0,
+  "gap_mm": 8.0,
+  "spacer_length_mm": 12.0,
+  "include_spacer": false,
+  "upper_dx_mm": 0.0
+}

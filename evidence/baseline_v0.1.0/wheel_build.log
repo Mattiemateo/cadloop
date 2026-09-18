@@ -1,0 +1,10 @@
+WARNING: The directory '/home/oai/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Processing /mnt/data/cadloop
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: cadloop
+  Building wheel for cadloop (pyproject.toml): started
+  Building wheel for cadloop (pyproject.toml): finished with status 'done'
+  Created wheel for cadloop: filename=cadloop-0.1.0-py3-none-any.whl size=46391 sha256=19db48ff48b86f6d447750e80e279f821b2c7cce4318e5ca5cfeddbe7a608cc5
+  Stored in directory: /tmp/pip-ephem-wheel-cache-s9brmcfo/wheels/6f/e2/a7/8b83b6b2aea031eb43aff589ba612ad5f21b6db3232ce0f45d
+Successfully built cadloop

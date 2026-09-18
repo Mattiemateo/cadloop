@@ -1,0 +1,1 @@
+{"revision":"53b68a394f9bfb57fd086b93a322904922734e53fcc40ff27e347914539a26aa","units":"mm","views":{"overview":{"file":"overview.png","method":"BREP_mesh_VTK_depth_buffer"},"section_xz":{"file":"section_xz.png","method":"BREP_plane_intersection","plane":{"normal":[0,1,0],"origin_mm":[0,0,0]}}}}

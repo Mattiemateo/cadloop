@@ -1,0 +1,77 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+______________ test_partial_web_cannot_pass_as_through_bore[0-1] _______________
+tests/test_geometry_adversarial.py:19: in test_partial_web_cannot_pass_as_through_bore
+    assert r['status']!='pass', 'A trimmed cylindrical face does not prove a clear hole'
+E   AssertionError: A trimmed cylindrical face does not prove a clear hole
+E   assert 'pass' != 'pass'
+_____________ test_partial_web_cannot_pass_as_through_bore[2.5-1] ______________
+tests/test_geometry_adversarial.py:19: in test_partial_web_cannot_pass_as_through_bore
+    assert r['status']!='pass', 'A trimmed cylindrical face does not prove a clear hole'
+E   AssertionError: A trimmed cylindrical face does not prove a clear hole
+E   assert 'pass' != 'pass'
+______________ test_partial_web_cannot_pass_as_through_bore[5-1] _______________
+tests/test_geometry_adversarial.py:19: in test_partial_web_cannot_pass_as_through_bore
+    assert r['status']!='pass', 'A trimmed cylindrical face does not prove a clear hole'
+E   AssertionError: A trimmed cylindrical face does not prove a clear hole
+E   assert 'pass' != 'pass'
+____________ test_partial_web_cannot_pass_as_through_bore[2.5-0.01] ____________
+tests/test_geometry_adversarial.py:19: in test_partial_web_cannot_pass_as_through_bore
+    assert r['status']!='pass', 'A trimmed cylindrical face does not prove a clear hole'
+E   AssertionError: A trimmed cylindrical face does not prove a clear hole
+E   assert 'pass' != 'pass'
+________________ test_obstruction_is_rejected_in_full_assembly _________________
+tests/test_geometry_adversarial.py:27: in test_obstruction_is_rejected_in_full_assembly
+    assert any(c['status']!='pass' for c in checks)
+E   assert False
+E    +  where False = any(<generator object test_obstruction_is_rejected_in_full_assembly.<locals>.<genexpr> at 0x7fddb835d3c0>)
+__________ test_oversize_proposal_does_not_commit_broken_working_copy __________
+tests/test_audit_regressions.py:106: in test_oversize_proposal_does_not_commit_broken_working_copy
+    assert tree_hashes(project.design)==before
+E   AssertionError: assert {'model.py': ...2c739d7dc034'} == {'model.py': ...106d143d6456'}
+E     
+E     Omitting 1 identical items, use -vv to show
+E     Differing items:
+E     {'parameters.json': '76c011ee4b232f32bd7eebc4b35a1d34410f8c1db387ec11538d2c739d7dc034'} != {'parameters.json': '5e4ce243a30298b6c849dd3083f06b3c31dbc131b1c2cf7ae24f106d143d6456'}
+E     {'model.py': 'ff1c727e011649c464bdedf4b85fcc9071641386bc553691087f1cf4d2b7a667'} != {'model.py': '1b579b5320630a33b1ff216ced0bf6026414ed91295dbff407802ba08ca791f5'}
+E     
+E     Full diff:
+E       {
+E     -     'model.py': '1b579b5320630a33b1ff216ced0bf6026414ed91295dbff407802ba08ca791f5',
+E     +     'model.py': 'ff1c727e011649c464bdedf4b85fcc9071641386bc553691087f1cf4d2b7a667',
+E           'padding.py': 'd52a6380bcbbe44aa0069fa182f7f0051b6528e8053c6de351afc334029f756a',
+E     -     'parameters.json': '5e4ce243a30298b6c849dd3083f06b3c31dbc131b1c2cf7ae24f106d143d6456',
+E     +     'parameters.json': '76c011ee4b232f32bd7eebc4b35a1d34410f8c1db387ec11538d2c739d7dc034',
+E       }
+________ test_search_does_not_claim_success_when_fresh_validation_fails ________
+tests/test_audit_regressions.py:128: in test_search_does_not_claim_success_when_fresh_validation_fails
+    assert r['status']!='FEASIBLE_CANDIDATE_FOUND'
+E   AssertionError: assert 'FEASIBLE_CANDIDATE_FOUND' != 'FEASIBLE_CANDIDATE_FOUND'
+=========================== short test summary info ============================
+FAILED tests/test_geometry_adversarial.py::test_partial_web_cannot_pass_as_through_bore[0-1] - AssertionError: A trimmed cylindrical face does not prove a clear hole
+assert 'pass' != 'pass'
+FAILED tests/test_geometry_adversarial.py::test_partial_web_cannot_pass_as_through_bore[2.5-1] - AssertionError: A trimmed cylindrical face does not prove a clear hole
+assert 'pass' != 'pass'
+FAILED tests/test_geometry_adversarial.py::test_partial_web_cannot_pass_as_through_bore[5-1] - AssertionError: A trimmed cylindrical face does not prove a clear hole
+assert 'pass' != 'pass'
+FAILED tests/test_geometry_adversarial.py::test_partial_web_cannot_pass_as_through_bore[2.5-0.01] - AssertionError: A trimmed cylindrical face does not prove a clear hole
+assert 'pass' != 'pass'
+FAILED tests/test_geometry_adversarial.py::test_obstruction_is_rejected_in_full_assembly - assert False
+ +  where False = any(<generator object test_obstruction_is_rejected_in_full_assembly.<locals>.<genexpr> at 0x7fddb835d3c0>)
+FAILED tests/test_audit_regressions.py::test_oversize_proposal_does_not_commit_broken_working_copy - AssertionError: assert {'model.py': ...2c739d7dc034'} == {'model.py': ...106d143d6456'}
+  
+  Omitting 1 identical items, use -vv to show
+  Differing items:
+  {'parameters.json': '76c011ee4b232f32bd7eebc4b35a1d34410f8c1db387ec11538d2c739d7dc034'} != {'parameters.json': '5e4ce243a30298b6c849dd3083f06b3c31dbc131b1c2cf7ae24f106d143d6456'}
+  {'model.py': 'ff1c727e011649c464bdedf4b85fcc9071641386bc553691087f1cf4d2b7a667'} != {'model.py': '1b579b5320630a33b1ff216ced0bf6026414ed91295dbff407802ba08ca791f5'}
+  
+  Full diff:
+    {
+  -     'model.py': '1b579b5320630a33b1ff216ced0bf6026414ed91295dbff407802ba08ca791f5',
+  +     'model.py': 'ff1c727e011649c464bdedf4b85fcc9071641386bc553691087f1cf4d2b7a667',
+        'padding.py': 'd52a6380bcbbe44aa0069fa182f7f0051b6528e8053c6de351afc334029f756a',
+  -     'parameters.json': '5e4ce243a30298b6c849dd3083f06b3c31dbc131b1c2cf7ae24f106d143d6456',
+  +     'parameters.json': '76c011ee4b232f32bd7eebc4b35a1d34410f8c1db387ec11538d2c739d7dc034',
+    }
+FAILED tests/test_audit_regressions.py::test_search_does_not_claim_success_when_fresh_validation_fails - AssertionError: assert 'FEASIBLE_CANDIDATE_FOUND' != 'FEASIBLE_CANDIDATE_FOUND'
+7 failed in 1.59s

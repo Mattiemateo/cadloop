@@ -1,0 +1,25 @@
+........................................................................ [ 33%]
+........................................................................ [ 66%]
+...........................................s...........................  [100%]
+============================= slowest 20 durations =============================
+29.19s call     tests/test_loop_progress.py::test_numeric_improvement_is_not_mistaken_for_stall
+18.87s call     tests/test_loop.py::test_replay_runs_real_geometry_not_a_fake_checker
+9.64s call     tests/test_audit_regressions.py::test_requesting_render_after_no_render_creates_views
+9.38s call     tests/test_project.py::test_failed_then_fixed_and_cached
+9.20s call     tests/test_hardening_edges.py::test_render_only_checkpoint_launches_no_geometry_workers
+5.00s call     tests/test_project.py::test_forged_report_is_rejected
+4.96s call     tests/test_project.py::test_stale_geometry_cannot_be_inspected_as_current
+4.84s call     tests/test_hardening_edges.py::test_preview_worker_failure_does_not_erase_geometry_acceptance
+4.80s call     tests/test_audit_regressions.py::test_timed_out_evaluation_does_not_poison_cache
+4.79s call     tests/test_project.py::test_api_secret_not_forwarded_to_worker
+4.77s call     tests/test_project.py::test_tampered_geometry_does_not_hit_cache
+4.75s call     tests/test_audit_regressions.py::test_native_cache_cannot_satisfy_docker_request
+1.60s call     tests/test_project.py::test_invalid_script_fails_closed
+1.24s call     tests/test_transactions_adversarial.py::test_lock_is_respected_by_a_separate_process
+1.10s call     tests/test_hardening_edges.py::test_worker_signal_death_fails_closed
+0.49s call     tests/test_feedback_efficiency.py::test_numeric_progress_rewards_smaller_error_without_accepting_it
+0.32s call     tests/test_audit_regressions.py::test_export_cannot_hide_free_face[assembly.brep]
+0.32s call     tests/test_audit_regressions.py::test_export_cannot_hide_free_face[assembly.step]
+0.28s call     tests/test_feedback_efficiency.py::test_cache_is_not_shared_across_rebuilds
+0.27s call     tests/test_views.py::test_depth_buffer_preview_and_exact_section
+214 passed, 1 skipped in 122.35s (0:02:02)

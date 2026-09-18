@@ -1,0 +1,26 @@
+{
+  "artifact": "CADLoop Codex Account Add-on",
+  "base_version": "0.1.1 (core unchanged)",
+  "date": "2026-09-18",
+  "launcher_contract_tests": {
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "passed": 18,
+  "test_method": "mocked subprocess transport and offline dry-run only",
+  "live_codex_requests": 0,
+  "cadgenbench_tasks_run": 0,
+  "official_cadgenbench_score": null,
+  "codex_cli_installed_in_this_runtime": false,
+  "core_suite_rerun_in_this_addon_task": false,
+  "not_verified": [
+    "live account login",
+    "live Codex CLI arguments on installed binary",
+    "workspace credit accounting",
+    "macOS",
+    "CADGenBench importer/generation/editing/scoring",
+    "unattended worker isolation"
+  ]
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="17.044" timestamp="2026-09-18T05:18:41.267616+00:00" hostname="localhost"><testcase classname="tests.test_loop_progress" name="test_numeric_improvement_is_not_mistaken_for_stall" time="17.005"><failure message="AssertionError: assert 'ESCALATION_REQUIRED' == 'GEOMETRY_ACCEPTED'&#10;  &#10;  - GEOMETRY_ACCEPTED&#10;  + ESCALATION_REQUIRED">tests/test_loop_progress.py:11: in test_numeric_improvement_is_not_mistaken_for_stall
+    assert r['status']=='GEOMETRY_ACCEPTED'
+E   AssertionError: assert 'ESCALATION_REQUIRED' == 'GEOMETRY_ACCEPTED'
+E     
+E     - GEOMETRY_ACCEPTED
+E     + ESCALATION_REQUIRED</failure></testcase></testsuite></testsuites>

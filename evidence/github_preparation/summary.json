@@ -1,0 +1,30 @@
+{
+  "prepared_date": "2026-09-18",
+  "repository_name": "cadloop",
+  "intended_visibility": "private",
+  "remote_created": false,
+  "remote_pushed": false,
+  "inputs": {
+    "CADLoop_v0.1.1.zip": "77e5270f7551a7b0439cff2b3148cd1fbbe33558768ac13d08c0d21c8584fe02",
+    "CADLoop_Codex_Account_Addon.zip": "3e8d5fd139ae2966f4d36a80834505e89fd9a9f6cfd8fd852496cf78999bd796"
+  },
+  "core_and_addon_python_source": "unchanged from input archives",
+  "packaging_changes": [
+    ".gitignore",
+    "AGENTS.md",
+    "README.md",
+    "SOURCE_MANIFEST.json"
+  ],
+  "original_manifest": {
+    "matching": 24,
+    "changed": 26,
+    "absent": 52
+  },
+  "launcher_smoke": {
+    "passed": 18,
+    "failed": 0,
+    "mode": "subprocess mocks; no account access"
+  },
+  "geometry_suite_rerun_this_step": false,
+  "cadgenbench_run": false
+}

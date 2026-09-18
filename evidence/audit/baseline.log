@@ -1,0 +1,19 @@
+......................................................s................. [ 96%]
+...                                                                      [100%]
+============================= slowest 15 durations =============================
+17.16s call     tests/test_loop.py::test_replay_runs_real_geometry_not_a_fake_checker
+10.34s call     tests/test_project.py::test_failed_then_fixed_and_cached
+5.66s call     tests/test_project.py::test_api_secret_not_forwarded_to_worker
+4.94s call     tests/test_project.py::test_forged_report_is_rejected
+4.94s call     tests/test_project.py::test_stale_geometry_cannot_be_inspected_as_current
+4.86s call     tests/test_project.py::test_tampered_geometry_does_not_hit_cache
+1.65s call     tests/test_project.py::test_invalid_script_fails_closed
+0.25s call     tests/test_project.py::test_timeout_fails_closed
+0.23s call     tests/test_views.py::test_depth_buffer_preview_and_exact_section
+0.21s call     tests/test_geometry.py::test_spacer_cannot_be_placed_elsewhere_on_plate
+0.17s call     tests/test_geometry.py::test_seeded_parameter_faults[gap_mm-16-plate_gap]
+0.15s call     tests/test_geometry.py::test_known_correct_assembly
+0.15s call     tests/test_geometry.py::test_interference_volume_not_bbox_guess
+0.15s call     tests/test_geometry.py::test_seeded_parameter_faults[spacer_length_mm-11-upper_spacer_contact]
+0.14s call     tests/test_geometry.py::test_stray_named_part_rejected
+74 passed, 1 skipped in 58.52s

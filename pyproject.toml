@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cadloop"
+version = "0.1.1"
+description = "Revision-bound CAD generation, independent BREP verification, and bounded repair tools"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = "MIT"
+dependencies = [
+  "cadquery-ocp==7.9.3.1.1",
+  "pydantic>=2.11,<3",
+  "numpy>=2.2,<3",
+  "matplotlib>=3.10,<4",
+]
+
+[project.optional-dependencies]
+cadquery = ["cadquery==2.8.0"]
+build123d = ["build123d>=0.10,<0.12"]
+llm = ["httpx>=0.28,<0.29"]
+dev = ["pytest>=8,<10"]
+
+[project.scripts]
+cadloop = "cadloop.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+cadloop = ["templates/**/*.json", "templates/**/*.py"]
+
+[tool.setuptools.exclude-package-data]
+cadloop = ["**/__pycache__/*", "**/*.pyc"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = ["integration: subprocess CAD build and verification", "optional: optional authoring runtime"]

@@ -1,0 +1,10 @@
+[
+  {
+    "kind": "propose",
+    "proposal": {
+      "base_revision": "$CURRENT_REVISION",
+      "parameters": {"include_spacer": true, "gap_mm": 12},
+      "reason": "Scripted integration fixture: restore the required spacer and the measured 12 mm gap."
+    }
+  }
+]

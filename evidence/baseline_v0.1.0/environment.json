@@ -1,0 +1,21 @@
+{
+  "runtime": {
+    "python": "3.13.5",
+    "platform": "Linux",
+    "machine": "x86_64",
+    "cadloop": "0.1.0",
+    "cadquery-ocp": "7.9.3.1.1",
+    "cadquery": "2.8.0",
+    "build123d": "not-installed",
+    "pydantic": "2.13.4",
+    "numpy": "2.3.5",
+    "matplotlib": "3.10.8",
+    "vtk": "9.6.2"
+  },
+  "tested_execution": "trusted-native",
+  "live_provider_calls": 0,
+  "docker_executed": false,
+  "build123d_executed": false,
+  "agentcad_integrated": false,
+  "installation_note": "Local editable and wheel packaging succeeded without dependency resolution. External dependency downloads were unavailable; this is not a portable lockfile."
+}

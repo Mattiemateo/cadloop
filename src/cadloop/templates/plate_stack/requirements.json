@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "name": "Plate-stack feedback demonstrator",
+  "description": "Deliberately broken synthetic assembly: two 80 x 50 x 6 mm plates, an 8 mm bore and a required 12 mm spacer. No manufacturer dimensions or production suitability are claimed.",
+  "units": "mm",
+  "expected_parts": [
+    "lower_plate",
+    "upper_plate",
+    "spacer"
+  ],
+  "parameters": {
+    "plate_thickness_mm": {
+      "kind": "number",
+      "unit": "mm",
+      "minimum": 4,
+      "maximum": 8,
+      "description": "Plate stock thickness; required nominal geometry is 6 mm."
+    },
+    "bore_diameter_mm": {
+      "kind": "number",
+      "unit": "mm",
+      "minimum": 6,
+      "maximum": 12,
+      "description": "Central bore diameter; independent requirements demand 8 mm."
+    },
+    "gap_mm": {
+      "kind": "number",
+      "unit": "mm",
+      "minimum": 5,
+      "maximum": 24,
+      "description": "Clear distance between inner plate faces."
+    },
+    "spacer_length_mm": {
+      "kind": "number",
+      "unit": "mm",
+      "minimum": 6,
+      "maximum": 24,
+      "description": "Axial spacer length."
+    },
+    "include_spacer": {
+      "kind": "boolean",
+      "unit": "boolean",
+      "description": "Include the required physical spacer."
+    },
+    "upper_dx_mm": {
+      "kind": "number",
+      "unit": "mm",
+      "minimum": -8,
+      "maximum": 8,
+      "description": "Upper plate X displacement; intended value zero."
+    }
+  },
+  "refs": {
+    "lower_bore": {
+      "kind": "cylinder",
+      "part": "lower_plate",
+      "radius": 4
+    },
+    "upper_bore": {
+      "kind": "cylinder",
+      "part": "upper_plate",
+      "radius": 4
+    },
+    "lower_top": {
+      "kind": "plane",
+      "part": "lower_plate",
+      "axis": "z",
+      "side": "max"
+    },
+    "upper_bottom": {
+      "kind": "plane",
+      "part": "upper_plate",
+      "axis": "z",
+      "side": "min"
+    },
+    "spacer_bottom": {
+      "kind": "plane",
+      "part": "spacer",
+      "axis": "z",
+      "side": "min"
+    },
+    "spacer_top": {
+      "kind": "plane",
+      "part": "spacer",
+      "axis": "z",
+      "side": "max"
+    },
+    "spacer_bore": {
+      "kind": "cylinder",
+      "part": "spacer",
+      "radius": 4
+    }
+  },
+  "checks": [
+    {
+      "id": "lower_x",
+      "kind": "dimension",
+      "part": "lower_plate",
+      "axis": "x",
+      "minimum": 79.99,
+      "maximum": 80.01,
+      "description": "lower_plate: required x extent [79.99, 80.01] mm",
+      "edit_hint": "Inspect plate() or spacer() and their dimension parameters."
+    },
+    {
+      "id": "lower_y",
+      "kind": "dimension",
+      "part": "lower_plate",
+      "axis": "y",
+      "minimum": 49.99,
+      "maximum": 50.01,
+      "description": "lower_plate: required y extent [49.99, 50.01] mm",
+      "edit_hint": "Inspect plate() or spacer() and their dimension parameters."
+    },
+    {
+      "id": "lower_z",
+      "kind": "dimension",
+      "part": "lower_plate",
+      "axis": "z",
+      "minimum": 5.99,
+      "maximum": 6.01,
+      "description": "lower_plate: required z extent [5.99, 6.01] mm",
+      "edit_hint": "Inspect plate() or spacer() and their dimension parameters."
+    },
+    {
+      "id": "lower_holes",
+      "kind": "through_holes_z",
+      "part": "lower_plate",
+      "holes": [
+        {
+          "x": 0,
+          "y": 0,
+          "radius": 4
+        },
+        {
+          "x": -28,
+          "y": -16,
+          "radius": 1.6
+        },
+        {
+          "x": -28,
+          "y": 16,
+          "radius": 1.6
+        },
+        {
+          "x": 28,
+          "y": -16,
+          "radius": 1.6
+        },
+        {
+          "x": 28,
+          "y": 16,
+          "radius": 1.6
+        }
+      ],
+      "description": "lower_plate: one 8 mm bore and four 3.2 mm mounting holes, all through",
+      "edit_hint": "Inspect plate() cuts; measure the solid rather than checking parameter values."
+    },
+    {
+      "id": "upper_x",
+      "kind": "dimension",
+      "part": "upper_plate",
+      "axis": "x",
+      "minimum": 79.99,
+      "maximum": 80.01,
+      "description": "upper_plate: required x extent [79.99, 80.01] mm",
+      "edit_hint": "Inspect plate() or spacer() and their dimension parameters."
+    },
+    {
+      "id": "upper_y",
+      "kind": "dimension",
+      "part": "upper_plate",
+      "axis": "y",
+      "minimum": 49.99,
+      "maximum": 50.01,
+      "description": "upper_plate: required y extent [49.99, 50.01] mm",
+      "edit_hint": "Inspect plate() or spacer() and their dimension parameters."
+    },
+    {
+      "id": "upper_z",
+      "kind": "dimension",
+      "part": "upper_plate",
+      "axis": "z",
+      "minimum": 5.99,
+      "maximum": 6.01,
+      "description": "upper_plate: required z extent [5.99, 6.01] mm",
+      "edit_hint": "Inspect plate() or spacer() and their dimension parameters."
+    },
+    {
+      "id": "upper_holes",
+      "kind": "through_holes_z",
+      "part": "upper_plate",
+      "holes": [
+        {
+          "x": 0,
+          "y": 0,
+          "radius": 4
+        },
+        {
+          "x": -28,
+          "y": -16,
+          "radius": 1.6
+        },
+        {
+          "x": -28,
+          "y": 16,
+          "radius": 1.6
+        },
+        {
+          "x": 28,
+          "y": -16,
+          "radius": 1.6
+        },
+        {
+          "x": 28,
+          "y": 16,
+          "radius": 1.6
+        }
+      ],
+      "description": "upper_plate: one 8 mm bore and four 3.2 mm mounting holes, all through",
+      "edit_hint": "Inspect plate() cuts; measure the solid rather than checking parameter values."
+    },
+    {
+      "id": "plate_gap",
+      "kind": "clearance",
+      "a": "lower_plate",
+      "b": "upper_plate",
+      "minimum": 11.95,
+      "maximum": 12.05,
+      "description": "Plate faces need a 12 mm nominal clear separation.",
+      "edit_hint": "Inspect gap_mm in place_upper_plate; upper z = thickness + gap."
+    },
+    {
+      "id": "bore_alignment",
+      "kind": "coaxial",
+      "a": "lower_bore",
+      "b": "upper_bore",
+      "max_offset": 0.05,
+      "max_angle_deg": 0.01,
+      "description": "The central bores must be coaxial.",
+      "edit_hint": "Inspect upper_dx_mm in place_upper_plate."
+    },
+    {
+      "id": "spacer_length",
+      "kind": "dimension",
+      "part": "spacer",
+      "axis": "z",
+      "minimum": 11.99,
+      "maximum": 12.01,
+      "description": "spacer: required z extent [11.99, 12.01] mm",
+      "edit_hint": "Inspect plate() or spacer() and their dimension parameters."
+    },
+    {
+      "id": "lower_spacer_contact",
+      "kind": "plane_contact",
+      "a": "lower_top",
+      "b": "spacer_bottom",
+      "max_gap": 0.001,
+      "min_area": 100,
+      "description": "The spacer must seat against the lower plate with at least 100 mm2 contact footprint.",
+      "edit_hint": "Inspect include_spacer, spacer placement and its mounting face."
+    },
+    {
+      "id": "upper_spacer_contact",
+      "kind": "plane_contact",
+      "a": "spacer_top",
+      "b": "upper_bottom",
+      "max_gap": 0.001,
+      "min_area": 100,
+      "description": "The spacer must reach the upper plate and have at least 100 mm2 contact footprint.",
+      "edit_hint": "Inspect spacer_length_mm and gap_mm; contact requires both position and area."
+    },
+    {
+      "id": "spacer_alignment",
+      "kind": "coaxial",
+      "a": "lower_bore",
+      "b": "spacer_bore",
+      "max_offset": 0.05,
+      "max_angle_deg": 0.01,
+      "description": "The spacer bore must share the plate bore axis.",
+      "edit_hint": "Inspect spacer placement; seating on any part of a plate is not sufficient."
+    },
+    {
+      "id": "spacer_holes",
+      "kind": "through_holes_z",
+      "part": "spacer",
+      "holes": [
+        {
+          "x": 0,
+          "y": 0,
+          "radius": 4
+        }
+      ],
+      "description": "The spacer needs an 8 mm through bore on the common axis."
+    },
+    {
+      "id": "spacer_x",
+      "kind": "dimension",
+      "part": "spacer",
+      "axis": "x",
+      "minimum": 17.99,
+      "maximum": 18.01,
+      "description": "Spacer outside X envelope is 18 mm."
+    },
+    {
+      "id": "spacer_y",
+      "kind": "dimension",
+      "part": "spacer",
+      "axis": "y",
+      "minimum": 17.99,
+      "maximum": 18.01,
+      "description": "Spacer outside Y envelope is 18 mm."
+    }
+  ],
+  "engineering_blockers": [
+    "Synthetic validation fixture, not an approved robot design.",
+    "No manufacturing fit or kerf calibration supplied.",
+    "No strength, fastener, dynamic-load or assembly-access review performed."
+  ]
+}

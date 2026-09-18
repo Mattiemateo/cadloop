@@ -1,0 +1,82 @@
+..FFFFFFFFFFFF                                                           [100%]
+=================================== FAILURES ===================================
+____________________ test_report_requires_automatic_checks _____________________
+tests/test_audit_regressions.py:37: in test_report_requires_automatic_checks
+    assert not make_report('a'*64, requirements, checks)['geometry_accepted']
+E   assert not True
+___________________ test_report_rejects_duplicate_check_ids ____________________
+tests/test_audit_regressions.py:43: in test_report_rejects_duplicate_check_ids
+    assert not make_report('a'*64, requirements, checks)['geometry_accepted']
+E   assert not True
+____________ test_nonfinite_measurement_never_passes_interval[nan] _____________
+tests/test_audit_regressions.py:48: in test_nonfinite_measurement_never_passes_interval
+    assert interval(value, None, None, 1e-6) != 'pass'
+E   AssertionError: assert 'pass' != 'pass'
+E    +  where 'pass' = interval(nan, None, None, 1e-06)
+____________ test_nonfinite_measurement_never_passes_interval[inf] _____________
+tests/test_audit_regressions.py:48: in test_nonfinite_measurement_never_passes_interval
+    assert interval(value, None, None, 1e-6) != 'pass'
+E   AssertionError: assert 'pass' != 'pass'
+E    +  where 'pass' = interval(inf, None, None, 1e-06)
+____________ test_nonfinite_measurement_never_passes_interval[-inf] ____________
+tests/test_audit_regressions.py:48: in test_nonfinite_measurement_never_passes_interval
+    assert interval(value, None, None, 1e-6) != 'pass'
+E   AssertionError: assert 'pass' != 'pass'
+E    +  where 'pass' = interval(-inf, None, None, 1e-06)
+________ test_json_rejects_ambiguous_or_nonfinite_values[{"x":1,"x":2}] ________
+tests/test_audit_regressions.py:54: in test_json_rejects_ambiguous_or_nonfinite_values
+    with pytest.raises((ValueError,CadLoopError)):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'cadloop.errors.CadLoopError'>)
+_________ test_json_rejects_ambiguous_or_nonfinite_values[{"x":1e999}] _________
+tests/test_audit_regressions.py:54: in test_json_rejects_ambiguous_or_nonfinite_values
+    with pytest.raises((ValueError,CadLoopError)):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'cadloop.errors.CadLoopError'>)
+__ test_json_rejects_ambiguous_or_nonfinite_values[{"nested":{"x":1,"x":2}}] ___
+tests/test_audit_regressions.py:54: in test_json_rejects_ambiguous_or_nonfinite_values
+    with pytest.raises((ValueError,CadLoopError)):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'cadloop.errors.CadLoopError'>)
+_______________ test_pending_reservation_blocks_new_reservation ________________
+tests/test_audit_regressions.py:61: in test_pending_reservation_blocks_new_reservation
+    with pytest.raises(CadLoopError) as e:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE <class 'cadloop.errors.CadLoopError'>
+_______________ test_native_cache_cannot_satisfy_docker_request ________________
+tests/test_audit_regressions.py:72: in test_native_cache_cannot_satisfy_docker_request
+    assert not r['cached'], 'A native run was silently used instead of Docker'
+E   AssertionError: A native run was silently used instead of Docker
+E   assert not True
+_____________ test_requesting_render_after_no_render_creates_views _____________
+tests/test_audit_regressions.py:81: in test_requesting_render_after_no_render_creates_views
+    assert (Path(r['run_directory'])/'views/overview.png').is_file()
+E   AssertionError: assert False
+E    +  where False = is_file()
+E    +    where is_file = (PosixPath('/tmp/pytest-of-root/pytest-1/test_requesting_render_after_n0/project/.cadloop/runs/da93a0acfeef-fd34e895') / 'views/overview.png').is_file
+E    +      where PosixPath('/tmp/pytest-of-root/pytest-1/test_requesting_render_after_n0/project/.cadloop/runs/da93a0acfeef-fd34e895') = Path('/tmp/pytest-of-root/pytest-1/test_requesting_render_after_n0/project/.cadloop/runs/da93a0acfeef-fd34e895')
+_______________ test_timed_out_evaluation_does_not_poison_cache ________________
+tests/test_audit_regressions.py:91: in test_timed_out_evaluation_does_not_poison_cache
+    assert not r['cached']
+E   assert not True
+=========================== short test summary info ============================
+FAILED tests/test_audit_regressions.py::test_report_requires_automatic_checks - assert not True
+FAILED tests/test_audit_regressions.py::test_report_rejects_duplicate_check_ids - assert not True
+FAILED tests/test_audit_regressions.py::test_nonfinite_measurement_never_passes_interval[nan] - AssertionError: assert 'pass' != 'pass'
+ +  where 'pass' = interval(nan, None, None, 1e-06)
+FAILED tests/test_audit_regressions.py::test_nonfinite_measurement_never_passes_interval[inf] - AssertionError: assert 'pass' != 'pass'
+ +  where 'pass' = interval(inf, None, None, 1e-06)
+FAILED tests/test_audit_regressions.py::test_nonfinite_measurement_never_passes_interval[-inf] - AssertionError: assert 'pass' != 'pass'
+ +  where 'pass' = interval(-inf, None, None, 1e-06)
+FAILED tests/test_audit_regressions.py::test_json_rejects_ambiguous_or_nonfinite_values[{"x":1,"x":2}] - Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'cadloop.errors.CadLoopError'>)
+FAILED tests/test_audit_regressions.py::test_json_rejects_ambiguous_or_nonfinite_values[{"x":1e999}] - Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'cadloop.errors.CadLoopError'>)
+FAILED tests/test_audit_regressions.py::test_json_rejects_ambiguous_or_nonfinite_values[{"nested":{"x":1,"x":2}}] - Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'cadloop.errors.CadLoopError'>)
+FAILED tests/test_audit_regressions.py::test_pending_reservation_blocks_new_reservation - Failed: DID NOT RAISE <class 'cadloop.errors.CadLoopError'>
+FAILED tests/test_audit_regressions.py::test_native_cache_cannot_satisfy_docker_request - AssertionError: A native run was silently used instead of Docker
+assert not True
+FAILED tests/test_audit_regressions.py::test_requesting_render_after_no_render_creates_views - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-root/pytest-1/test_requesting_render_after_n0/project/.cadloop/runs/da93a0acfeef-fd34e895') / 'views/overview.png').is_file
+ +      where PosixPath('/tmp/pytest-of-root/pytest-1/test_requesting_render_after_n0/project/.cadloop/runs/da93a0acfeef-fd34e895') = Path('/tmp/pytest-of-root/pytest-1/test_requesting_render_after_n0/project/.cadloop/runs/da93a0acfeef-fd34e895')
+FAILED tests/test_audit_regressions.py::test_timed_out_evaluation_does_not_poison_cache - assert not True
+12 failed, 2 passed in 13.19s

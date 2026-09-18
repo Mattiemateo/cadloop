@@ -1,0 +1,16 @@
+{
+  "tests": 75,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 1,
+  "passed": 74,
+  "elapsed_seconds": 54.341,
+  "command": "pytest -q --tb=short --durations=12 --junitxml=evidence/pytest.xml",
+  "skipped_cases": [
+    {
+      "name": "test_build123d_authoring_optional",
+      "reason": "could not import 'build123d': No module named 'build123d'"
+    }
+  ],
+  "interpretation": "Native geometry, adversarial input and replay/mock tests, not live LLM performance. Docker, build123d, macOS and Onshape are not validated."
+}

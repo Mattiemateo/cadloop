@@ -1,0 +1,11 @@
+{
+  "CODEX_ADDON_README.md": "8d86e8ffede84cb7d2e0a0ffb9929c444eab84ddde93f7ed2a1ee9652500153d",
+  "scripts/start_codex.py": "b1e316e0dde628ca273c04d286e20a4470b5d036014112c816e7aaa1a46ec1e1",
+  "docs/CODEX_ACCOUNT.md": "7b30969f5fe7139d3641ba06114ad042f0d76433610888a38df68b5ee7a7e7c2",
+  "docs/CADGENBENCH_PROTOCOL.md": "fd912b97350f6ea0ddd10219292ef678e61c9be5779cc34c107ececf3d841cd8",
+  "tests/test_codex_launcher.py": "3e577521c5204e53d4ade98ef42fcc8a210d42f94d391fa6f0f1faf44b470b45",
+  "evidence/codex_addon/pytest.xml": "a0fda9824fbd1b22825da1e0f7c3d572b542b7a84bd3f9e6d90c87ef2ed8e758",
+  "evidence/codex_addon/pytest.log": "e07cf3ea2f75a57c4af107165a06eebecbe08d801151fd5e0c8513beca4b5599",
+  "evidence/codex_addon/dry_run.json": "0ffc31cc8e48fe464b0c47478b4d8ce6ac33be5adc2005d7e8508800a0352f8a",
+  "evidence/codex_addon/test_results.json": "78fae124d25dbd994436cee6c010e2a8d22dcbb6f08428e7e44e3c3f2b5504b5"
+}

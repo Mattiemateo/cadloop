@@ -1,0 +1,10 @@
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+____________ test_workplane_does_not_silently_discard_second_object ____________
+tests/test_authoring_adversarial.py:12: in test_workplane_does_not_silently_discard_second_object
+    with pytest.raises((ValueError,TypeError)):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'TypeError'>)
+=========================== short test summary info ============================
+FAILED tests/test_authoring_adversarial.py::test_workplane_does_not_silently_discard_second_object - Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'TypeError'>)
+1 failed, 2 passed in 1.39s

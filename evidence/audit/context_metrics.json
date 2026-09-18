@@ -1,0 +1,7 @@
+{
+  "profile": "parameter-only; same synthetic fixture and minimal feedback",
+  "before_canonical_json_bytes": 9187,
+  "after_canonical_json_bytes": 4892,
+  "not_a_token_cost_or_quality_benchmark": true,
+  "reduction_percent": 46.75084358332426
+}

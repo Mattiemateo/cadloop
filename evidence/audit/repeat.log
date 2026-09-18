@@ -1,0 +1,17 @@
+........................................................................ [ 33%]
+.................s...................................................... [ 66%]
+.......................................................................  [100%]
+============================= slowest 12 durations =============================
+30.16s call     tests/test_loop_progress.py::test_numeric_improvement_is_not_mistaken_for_stall
+19.29s call     tests/test_loop.py::test_replay_runs_real_geometry_not_a_fake_checker
+9.52s call     tests/test_project.py::test_failed_then_fixed_and_cached
+9.46s call     tests/test_hardening_edges.py::test_render_only_checkpoint_launches_no_geometry_workers
+9.00s call     tests/test_audit_regressions.py::test_requesting_render_after_no_render_creates_views
+5.34s call     tests/test_audit_regressions.py::test_timed_out_evaluation_does_not_poison_cache
+4.82s call     tests/test_project.py::test_api_secret_not_forwarded_to_worker
+4.82s call     tests/test_audit_regressions.py::test_native_cache_cannot_satisfy_docker_request
+4.80s call     tests/test_hardening_edges.py::test_preview_worker_failure_does_not_erase_geometry_acceptance
+4.78s call     tests/test_project.py::test_forged_report_is_rejected
+4.63s call     tests/test_project.py::test_tampered_geometry_does_not_hit_cache
+4.60s call     tests/test_project.py::test_stale_geometry_cannot_be_inspected_as_current
+214 passed, 1 skipped in 122.82s (0:02:02)

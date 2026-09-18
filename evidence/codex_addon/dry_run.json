@@ -1,0 +1,23 @@
+{
+  "command": [
+    "codex",
+    "-c",
+    "model_provider=\"openai\"",
+    "-c",
+    "forced_login_method=\"chatgpt\"",
+    "--cd",
+    "/mnt/data/cadloop_codex_update/cadloop",
+    "--sandbox",
+    "workspace-write",
+    "--ask-for-approval",
+    "on-request",
+    "Read AGENTS.md, docs/TOOLS.md and docs/CODEX_ACCOUNT.md. You are the\nsingle coding agent for this CADLoop session. Use the local CADLoop CLI for\nstate, measurements, scoped proposals, evaluation, views, searches and finish.\nDo not start its paid-provider managed loop, request API keys, read credentials,\ninstall another model provider, or invoke a nested AI agent. First report the\navailable projects and current evidence; do not assume a model is accepted.\nDo not edit the harness, checkers, requirements, receipts, references or acceptance\nflags to make a CAD task pass. Obtain explicit permission before native execution;\nonly reviewed source may run natively. Newly generated source needs separately\nvalidated isolation. Keep edits small and reports factual. Do not upload anything\npublicly or claim a CADGenBench score without its actual independent evaluation.\nAsk the user which existing project/task to work on after the initial inspection.\n"
+  ],
+  "removed_environment_variable_names": [
+    "OPENAI_API_KEY",
+    "CODEX_API_KEY"
+  ],
+  "auth": "existing Codex ChatGPT login; no credential contents read",
+  "mode": "supervised local session; not a benchmark run",
+  "billing": "ChatGPT plan/workspace policy; not a guarantee of zero credits"
+}

@@ -1,0 +1,19 @@
+{
+  "versions": {
+    "python": "3.13.5",
+    "platform": "Linux",
+    "machine": "x86_64",
+    "cadloop": "0.1.1",
+    "cadquery-ocp": "7.9.3.1.1",
+    "cadquery": "2.8.0",
+    "build123d": "not-installed",
+    "pydantic": "2.13.4",
+    "numpy": "2.3.5",
+    "matplotlib": "3.10.8",
+    "vtk": "9.6.2"
+  },
+  "docker_available": false,
+  "build123d_available": false,
+  "cadquery_available": true,
+  "warning": "Installed does not mean independently benchmarked. Native mode is not sandboxed."
+}

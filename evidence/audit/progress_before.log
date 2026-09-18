@@ -1,0 +1,15 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_numeric_improvement_is_not_mistaken_for_stall ______________
+tests/test_loop_progress.py:11: in test_numeric_improvement_is_not_mistaken_for_stall
+    assert r['status']=='GEOMETRY_ACCEPTED'
+E   AssertionError: assert 'ESCALATION_REQUIRED' == 'GEOMETRY_ACCEPTED'
+E     
+E     - GEOMETRY_ACCEPTED
+E     + ESCALATION_REQUIRED
+=========================== short test summary info ============================
+FAILED tests/test_loop_progress.py::test_numeric_improvement_is_not_mistaken_for_stall - AssertionError: assert 'ESCALATION_REQUIRED' == 'GEOMETRY_ACCEPTED'
+  
+  - GEOMETRY_ACCEPTED
+  + ESCALATION_REQUIRED
+1 failed in 17.04s

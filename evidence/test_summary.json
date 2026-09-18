@@ -1,0 +1,206 @@
+{
+  "version": "0.1.1",
+  "audit_date": "2026-09-18",
+  "original_suite_rerun": {
+    "tests": 75,
+    "passed": 74,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "skipped_cases": [
+      {
+        "name": "test_build123d_authoring_optional",
+        "reason": "could not import 'build123d': No module named 'build123d'"
+      }
+    ],
+    "elapsed_seconds": 58.516
+  },
+  "expanded_suite": {
+    "tests": 215,
+    "passed": 214,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "skipped_cases": [
+      {
+        "name": "test_build123d_authoring_optional",
+        "reason": "could not import 'build123d': No module named 'build123d'"
+      }
+    ],
+    "elapsed_seconds": 122.346
+  },
+  "shuffled_repeat": {
+    "tests": 215,
+    "passed": 214,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "skipped_cases": [
+      {
+        "name": "test_build123d_authoring_optional",
+        "reason": "could not import 'build123d': No module named 'build123d'"
+      }
+    ],
+    "elapsed_seconds": 122.819
+  },
+  "shuffled_seed": 20260918,
+  "commands": [
+    "PYTHONPATH=src python -m coverage run --branch -m pytest -q --tb=short --durations=20 --junitxml=final.xml",
+    "PYTHONPATH=src python audit/run_shuffled.py --output-dir AUDIT_OUTPUT --seed 20260918"
+  ],
+  "new_passing_test_cases": 140,
+  "context": {
+    "profile": "parameter-only; same synthetic fixture and minimal feedback",
+    "before_canonical_json_bytes": 9187,
+    "after_canonical_json_bytes": 4892,
+    "not_a_token_cost_or_quality_benchmark": true,
+    "reduction_percent": 46.75084358332426
+  },
+  "microbenchmark": {
+    "check_evidence_digest": "3c409938528b1db69769a7b19fa18252e5a6394311fbdd7fee1f2cd811da4ee4",
+    "checks_in_microbenchmark": 24,
+    "cylindrical_face_traversals": {
+      "cached": 3,
+      "uncached": 7
+    },
+    "identical_evidence": true,
+    "limitations": "Single-machine microbenchmark with warm imports and prebuilt geometry. Does not predict large assemblies or model costs.",
+    "llm_calls": 0,
+    "median_reduction_percent": 0.3191236189852842,
+    "median_seconds": {
+      "cached": 0.10538856049993228,
+      "uncached": 0.10572595700011789
+    },
+    "repetitions_each": 12,
+    "samples_seconds": {
+      "cached": [
+        0.10559329099987735,
+        0.1031158759999471,
+        0.105172654999933,
+        0.10747175899996364,
+        0.10829669999998259,
+        0.10435289099996226,
+        0.10720491300003232,
+        0.10439058700012538,
+        0.10743606599999111,
+        0.10517857300010292,
+        0.10775228099987544,
+        0.10518382999998721
+      ],
+      "uncached": [
+        0.10510885100006817,
+        0.10628575800001272,
+        0.10799400499990952,
+        0.10440390600001592,
+        0.10443088600004558,
+        0.10329744199998458,
+        0.10803102900013073,
+        0.10574377300008564,
+        0.10875888800001121,
+        0.10570814100015014,
+        0.1037406519999422,
+        0.10706933899996329
+      ]
+    },
+    "scope": "Identical hardened in-process geometric checks, one synthetic 3-part assembly; not end-to-end model or CAD build latency",
+    "versions": {
+      "build123d": "not-installed",
+      "cadloop": "0.1.1-source",
+      "cadquery": "2.8.0",
+      "cadquery-ocp": "7.9.3.1.1",
+      "machine": "x86_64",
+      "matplotlib": "3.10.8",
+      "numpy": "2.3.5",
+      "platform": "Linux",
+      "pydantic": "2.13.4",
+      "python": "3.13.5",
+      "vtk": "9.6.2"
+    }
+  },
+  "live_inference_calls": 0,
+  "scope": "CadQuery/OpenCascade Linux native tests; parameterized cases included in totals",
+  "not_verified": [
+    "build123d runtime",
+    "Docker execution/isolation",
+    "macOS",
+    "network clean install",
+    "live provider or inexpensive-model quality/cost",
+    "Onshape feature export",
+    "physical fits/strength/motion"
+  ],
+  "coverage_note": "coverage.json observes the test/controller interpreter; CAD workers are separate processes. Do not interpret it as whole-system line coverage.",
+  "packaging_smoke": {
+    "import_path": "/mnt/data/cadloop_install_smoke/lib/python3.13/site-packages/cadloop/__init__.py",
+    "installed_cli_doctor": true,
+    "installed_wheel_fresh_finish": {
+      "blocker_ids": [],
+      "blockers": [],
+      "cached": false,
+      "engineering_approved": false,
+      "engineering_blockers": [
+        "Synthetic validation fixture, not an approved robot design.",
+        "No manufacturing fit or kerf calibration supplied.",
+        "No strength, fastener, dynamic-load or assembly-access review performed."
+      ],
+      "export_directory": "/mnt/data/cadloop_installed_fixture/exports/89fcc276b2c6-c53fa730",
+      "exported": true,
+      "geometry_accepted": true,
+      "inspect_instruction": "Use inspect --check CHECK_ID for full evidence.",
+      "more_blocker_details": 0,
+      "progress_key": [
+        0,
+        0,
+        0
+      ],
+      "revision": "89fcc276b2c610b4ad2c9ed687688039cd06fef303be578d1017bf0104947bda",
+      "run_directory": "/mnt/data/cadloop_installed_fixture/.cadloop/runs/89fcc276b2c6-c53fa730",
+      "run_id": "89fcc276b2c6-c53fa730",
+      "schema_version": 1,
+      "status": "GEOMETRY_ACCEPTED",
+      "suggested_view": "section_xz",
+      "summary": {
+        "fail": 0,
+        "indeterminate": 0,
+        "not_applicable": 0,
+        "pass": 26
+      },
+      "units": "mm"
+    },
+    "scope": "Installed own wheel into a separate virtual environment with explicitly reused preinstalled CAD dependencies; not a clean/network installation.",
+    "versions": {
+      "build123d": "not-installed",
+      "cadloop": "0.1.1",
+      "cadquery": "2.8.0",
+      "cadquery-ocp": "7.9.3.1.1",
+      "machine": "x86_64",
+      "matplotlib": "3.10.8",
+      "numpy": "2.3.5",
+      "platform": "Linux",
+      "pydantic": "2.13.4",
+      "python": "3.13.5",
+      "vtk": "9.6.2"
+    },
+    "wheel": "cadloop-0.1.1-py3-none-any.whl"
+  },
+  "package_source_files_sha256": {
+    "src/cadloop/__init__.py": "05741193fcb50e33aaeaee0376b930de7bfdb8586ce5b529b348302c0e9653e4",
+    "src/cadloop/__main__.py": "79ee6f134c5c5193377cf9b189cbdcc3e2095e49ba9cec310114441c15a917c4",
+    "src/cadloop/authoring.py": "27bddafc8846e2bb0f5161e1ed9b241e902c884bafdb351ea012dc114d1e224c",
+    "src/cadloop/budget.py": "fdcc374f22a1bf5271a1f171679db27015f1c2b1ceb776d469c11bac0a1f26e9",
+    "src/cadloop/checks.py": "a4c672c55d051dd292def0a7e7c67526768ebf183972c325d4cb0dae36b7a4ec",
+    "src/cadloop/cli.py": "127ee212d0df687b3b4716fb9801b021817f213b7e7044f88e488269480e2d65",
+    "src/cadloop/contracts.py": "43872fba23232195e0b733589bb4e741ddd14f170888c77097b1ce0d9180c52c",
+    "src/cadloop/errors.py": "1f52a6c197b205735545648c903a2fb68b856576c5a38206d49a1bd26ed0e94c",
+    "src/cadloop/execution.py": "52e2effc6aed1024fca26bc85b7f51114b5509ae5b10b813c98e69d3b76c5677",
+    "src/cadloop/feedback.py": "d86a75a9f6de79b3f5d50b73d84ae1816771f491fdd552e876029be2ad8f0cac",
+    "src/cadloop/kernel.py": "e3a2b52d75e20f11a75b18fb8e7dc6ae909cd7759112b0a1de24a4166f6f2b22",
+    "src/cadloop/loop.py": "5583dcd6207e7eb76d942e9cfe5461abf4bf89009788da6f448f1b83d9dde76b",
+    "src/cadloop/project.py": "23ecde219fb5d3ace994c846a3514006c69c50ca735d797dea3ed81b3ee91504",
+    "src/cadloop/search.py": "3eab40a96a45615bd1cdba14e8aee205f663b81bc110a00d210767a961ee771a",
+    "src/cadloop/templates/plate_stack/design/model_build123d.py": "3aadc05557db1c61c57afbc0db6dd8f733ab45caa2a18bf42550332575a51e9f",
+    "src/cadloop/templates/plate_stack/design/model_cadquery.py": "1b579b5320630a33b1ff216ced0bf6026414ed91295dbff407802ba08ca791f5",
+    "src/cadloop/util.py": "d6447dad4abe8f570e989c4676be13b2a1dc519d71b753aaf39bbbe226135b3d",
+    "src/cadloop/views.py": "c031fd088fdeb3c8463dee8bf94189d8333c9857d43fa4e18ad90a90e0df7200",
+    "src/cadloop/worker.py": "9a26f12403f4f98650c9bb92c0200b68bb6e50b02fca5a15f778b74d7a8fd272"
+  }
+}
