@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "command": [
+    "agent",
+    "--workspace",
+    "/mnt/data/cadloop_cursor_work/cadloop",
+    "--sandbox",
+    "enabled",
+    "Read AGENTS.md, docs/TOOLS.md and docs/CURSOR_ACCOUNT.md. You are the\nsingle coding agent in this supervised CADLoop session. Use the local CADLoop\nCLI for state, measured evidence, bounded context, scoped proposals, evaluation,\nviews, parameter search and finish. Do not launch another AI agent or CADLoop's\npaid-provider loop, request API keys, or read/copy account credentials.\nFor an existing CAD project, start with state and compact context, then fetch\nonly relevant source and failed checks. Prefer a parameter change or a small\nfeature edit; use bounded search for simple dimensions instead of repeated\nmodel guesses. Preserve units, constraints and uncertainty in concise feedback.\nFor a new part, establish the reviewed brief, parameters and requirements before\ncreating a project. Do not invent missing manufacturer dimensions or weaken a\nrequirement to pass. Do not modify the harness, checkers, existing requirements,\nreference data, receipts or acceptance flags during CAD repair.\nInspect and report available execution modes. Ask before native CAD execution;\nonly reviewed source may run natively. Newly generated source needs validated\nbuild isolation or human review and explicit native-execution consent. Cursor's\nshell sandbox is not proof that CADLoop's generated-code isolation is validated.\nDo not install dependencies, publish files, or change account/configuration\nsettings without permission. Finish by freshly verifying the result and reporting\nremaining engineering blockers; never invent benchmark scores or cost savings.\n\nInspect available projects, then ask which CAD task to work on.\n"
+  ],
+  "cwd": "/mnt/data/cadloop_cursor_work/cadloop",
+  "checks_performed": [],
+  "removed_environment_variable_names": [
+    "CURSOR_API_KEY",
+    "CURSOR_AUTH_TOKEN",
+    "OPENAI_API_KEY",
+    "CODEX_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "GOOGLE_API_KEY",
+    "GEMINI_API_KEY"
+  ],
+  "authentication": "Saved Cursor login; no credential files read by the launcher.",
+  "billing": "Cursor account settings, NOT your ChatGPT/Codex entitlement; no spend cap enforced here.",
+  "mode": "Supervised interactive launch; not a benchmark or unattended batch."
+}

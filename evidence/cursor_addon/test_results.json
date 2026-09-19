@@ -1,0 +1,114 @@
+{
+  "project": "CADLoop",
+  "core_version": "0.1.1",
+  "integration": "Cursor CLI add-on",
+  "date": "2026-09-19",
+  "launchers": {
+    "tests": 123,
+    "passed": 123,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "duration_seconds": 8.15,
+    "by_module": {
+      "tests.test_cursor_launcher": 105,
+      "tests.test_codex_launcher": 18
+    }
+  },
+  "full_suite": {
+    "tests": 338,
+    "passed": 337,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0,
+    "duration_seconds": 131.649,
+    "by_module": {
+      "tests.test_analytic_properties": 79,
+      "tests.test_audit_regressions": 16,
+      "tests.test_authoring_adversarial": 3,
+      "tests.test_codex_launcher": 18,
+      "tests.test_contracts": 21,
+      "tests.test_cursor_launcher": 105,
+      "tests.test_feedback_efficiency": 9,
+      "tests.test_geometry": 24,
+      "tests.test_geometry_adversarial": 5,
+      "tests.test_hardening_edges": 21,
+      "tests.test_loop": 10,
+      "tests.test_loop_progress": 1,
+      "tests.test_project": 19,
+      "tests.test_transactions_adversarial": 6,
+      "tests.test_views": 1
+    }
+  },
+  "new_cursor_tests": 105,
+  "retained_codex_tests": 18,
+  "commands": {
+    "launchers": "python -m pytest tests/test_cursor_launcher.py tests/test_codex_launcher.py -q --tb=short --junitxml=evidence/cursor_addon/launchers.xml",
+    "environment_setup": "python -m pip install --no-deps --no-build-isolation -e .",
+    "full_suite": "python -m pytest -q --tb=short --durations=8 --junitxml=evidence/cursor_addon/full_suite.xml"
+  },
+  "initial_checkout_run": {
+    "summary": {
+      "tests": 338,
+      "passed": 336,
+      "skipped": 1,
+      "failures": 1,
+      "errors": 0,
+      "duration_seconds": 135.185,
+      "by_module": {
+        "tests.test_analytic_properties": 79,
+        "tests.test_audit_regressions": 16,
+        "tests.test_authoring_adversarial": 3,
+        "tests.test_codex_launcher": 18,
+        "tests.test_contracts": 21,
+        "tests.test_cursor_launcher": 105,
+        "tests.test_feedback_efficiency": 9,
+        "tests.test_geometry": 24,
+        "tests.test_geometry_adversarial": 5,
+        "tests.test_hardening_edges": 21,
+        "tests.test_loop": 10,
+        "tests.test_loop_progress": 1,
+        "tests.test_project": 19,
+        "tests.test_transactions_adversarial": 6,
+        "tests.test_views": 1
+      }
+    },
+    "failure": "test_lock_is_respected_by_a_separate_process: child could not import the uninstalled cadloop package.",
+    "confirmed_cause": "A direct child import produced ModuleNotFoundError: No module named cadloop.",
+    "resolution": "Installed this checkout editable using existing dependencies; repeated the complete suite without changing core code."
+  },
+  "environment": {
+    "python": "3.13.5",
+    "os": "Linux",
+    "packages": {
+      "pytest": "9.0.2",
+      "cadquery": "2.8.0",
+      "cadquery-ocp": "7.9.3.1.1",
+      "pydantic": "2.13.4"
+    },
+    "dependency_installation": "Existing container CAD dependencies; not a clean network install."
+  },
+  "source_identity": {
+    "source_archive": "CADLoop_GitHub_Ready.zip",
+    "archive_sha256": "ad76578d66ecc9b6f760ceb447ef8fa5505b70508f2e4052d8cc0303dbe3c500",
+    "comparison": "byte-for-byte",
+    "files_checked": 24,
+    "all_identical": true,
+    "scope": "src/**, pyproject.toml, scripts/start_codex.py and tests/test_codex_launcher.py"
+  },
+  "scope": {
+    "cursor_launcher": "Synthetic help/status mocks and real child-process/PTY plumbing with a fake CLI.",
+    "cad_regressions": "Real local CadQuery/OpenCascade geometry.",
+    "live_cursor_inference_requests": 0,
+    "real_cursor_cli_available": false,
+    "unverified": [
+      "Real Cursor login and inference",
+      "Real Cursor sandbox behavior",
+      "Cursor account billing",
+      "macOS",
+      "build123d",
+      "Docker isolation",
+      "CADGenBench"
+    ]
+  }
+}

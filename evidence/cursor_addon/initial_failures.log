@@ -1,0 +1,35 @@
+...........................F............................................ [ 59%]
+......F..........................................                        [100%]
+=================================== FAILURES ===================================
+_ test_negative_or_unknown_status_fails_closed[Logged in as fixture\nCURSOR_API_KEY override] _
+tests/test_cursor_launcher.py:102: in test_negative_or_unknown_status_fails_closed
+    assert not launcher.confirms_account_status(status)
+E   AssertionError: assert not True
+E    +  where True = <function confirms_account_status at 0x7fcc6fe15440>('Logged in as fixture\nCURSOR_API_KEY override')
+E    +    where <function confirms_account_status at 0x7fcc6fe15440> = launcher.confirms_account_status
+___________________ test_requested_mode_requires_cli_support ___________________
+tests/test_cursor_launcher.py:184: in test_requested_mode_requires_cli_support
+    assert launcher.main(["--repo", str(repo), "--mode", "plan", "--check"]) == 4
+E   AssertionError: assert 0 == 4
+E    +  where 0 = <function main at 0x7fcc6fe158a0>(['--repo', '/tmp/pytest-of-root/pytest-0/test_requested_mode_requires_c0/CAD project ; spaces', '--mode', 'plan', '--check'])
+E    +    where <function main at 0x7fcc6fe158a0> = launcher.main
+----------------------------- Captured stdout call -----------------------------
+{
+  "schema_version": 1,
+  "status": "ready_for_supervised_launch",
+  "executable": "/fake/cursor-agent",
+  "cwd": "/tmp/pytest-of-root/pytest-0/test_requested_mode_requires_c0/CAD project ; spaces",
+  "authentication_check": "Positive CLI status after removing documented key/token overrides; opaque credential storage is not inspected.",
+  "sandbox_requested": "enabled",
+  "inference_started": false,
+  "billing": "Cursor account settings; this launcher does not cap spending.",
+  "validation_scope": "CLI help and login only, not CAD runtime, sandbox efficacy or model quality."
+}
+=========================== short test summary info ============================
+FAILED tests/test_cursor_launcher.py::test_negative_or_unknown_status_fails_closed[Logged in as fixture\nCURSOR_API_KEY override] - AssertionError: assert not True
+ +  where True = <function confirms_account_status at 0x7fcc6fe15440>('Logged in as fixture\nCURSOR_API_KEY override')
+ +    where <function confirms_account_status at 0x7fcc6fe15440> = launcher.confirms_account_status
+FAILED tests/test_cursor_launcher.py::test_requested_mode_requires_cli_support - AssertionError: assert 0 == 4
+ +  where 0 = <function main at 0x7fcc6fe158a0>(['--repo', '/tmp/pytest-of-root/pytest-0/test_requested_mode_requires_c0/CAD project ; spaces', '--mode', 'plan', '--check'])
+ +    where <function main at 0x7fcc6fe158a0> = launcher.main
+2 failed, 119 passed in 8.87s

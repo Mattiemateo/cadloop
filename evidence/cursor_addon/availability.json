@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-19",
+  "python": "3.13.5",
+  "platform": "Linux",
+  "executables": {
+    "agent": null,
+    "cursor-agent": null,
+    "codex": null
+  },
+  "official_installer_attempt": {
+    "url": "https://cursor.com/install",
+    "method": "curl",
+    "exit_code": 6,
+    "error": "Could not resolve host: cursor.com"
+  },
+  "download_tool_retry": "failed",
+  "real_cursor_login_tested": false,
+  "real_cursor_inference_requests": 0,
+  "note": "The fake CLI tests exercise subprocess/terminal behavior, not the Cursor service."
+}

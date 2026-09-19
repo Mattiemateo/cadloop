@@ -85,3 +85,19 @@ were explicitly reused from this runtime. The first attempted inherited-only
 virtual environment did not see the parent environment's Pydantic; dependency
 visibility was corrected before the successful smoke run. This is not a clean
 networked dependency installation test.
+
+
+## Cursor CLI entry point (September 19, 2026)
+
+Added `scripts/start_cursor.py` for supervised, account-authenticated use alongside
+Codex. It checks the installed CLI's advertised workspace/sandbox capabilities and
+saved-login status, strips direct key/token environment overrides, and supports
+optional task/model/mode selection. No headless batch or automatic approvals are
+added. The CAD core, geometry checks and Codex launcher are unchanged.
+
+The added tests use mocks and a temporary executable with a synthetic Cursor
+protocol. See `evidence/cursor_addon/test_results.json` for run counts. An actual
+Cursor CLI download failed due to DNS resolution in this environment. Live Cursor
+login/inference, sandbox efficacy, and macOS support are unverified. Cursor uses a
+separate Cursor account, not ChatGPT/Codex entitlement. The shared `AGENTS.md` now
+recognizes both hosts. See `docs/CURSOR_ACCOUNT.md` before running.

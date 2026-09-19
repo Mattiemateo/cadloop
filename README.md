@@ -8,16 +8,36 @@ A working local CAD feedback harness: generate solids, inspect the **exported ge
 
 The included synthetic fixture starts with a missing spacer and an 8 mm plate gap where 12 mm is required. The demo detects the faults, searches bounded candidate gaps, and exports a corrected assembly. The tests also inject wrong holes, misalignment, interference, hidden geometry, stale revisions, tampered evidence, and worker failures.
 
-## Codex account workflow (recommended for this repository)
+## Account-based coding hosts: Codex or Cursor CLI
 
-The Codex-account add-on is already merged; no second ZIP or model API key is
-required. Start with [the account setup guide](docs/CODEX_ACCOUNT.md) and use
-`scripts/start_codex.py` after signing in locally. Use Codex as the coding agent
-and CADLoop as its local tools, not a second API-backed agent loop.
+Both launchers are included. Use one coding host with CADLoop's local tools;
+no second API-backed model loop is needed.
+
+| Host | Sign in locally | Launch from this repository |
+|---|---|---|
+| Codex | `codex login` | `python3 scripts/start_codex.py` |
+| Cursor CLI | `agent login` | `python3 scripts/start_cursor.py` |
+
+Read the [Codex account guide](docs/CODEX_ACCOUNT.md) or
+[Cursor account guide](docs/CURSOR_ACCOUNT.md). Cursor uses its own account,
+not your ChatGPT/Codex entitlement. The Cursor launcher supports `--dry-run`,
+`--check`, `--task`, `--model`, and `--mode plan` / `--mode ask`; it requests a
+sandbox without force/auto-approval flags. It detects compatible `agent` and
+`cursor-agent` executables. No model API key is requested.
+
+```sh
+python3 scripts/start_cursor.py --check
+python3 scripts/start_cursor.py --task "Inspect work/manual and propose a minimal repair."
+```
+
+Cursor launch tests are offline contract tests, not real account/model calls.
+See [the Cursor guide](docs/CURSOR_ACCOUNT.md#validation-scope) for the tested
+scope. The original Codex launcher and CAD engine are unchanged.
 
 The [CADGenBench protocol](docs/CADGENBENCH_PROTOCOL.md) is a plan, not a completed
-benchmark. See [repository preparation notes](docs/GITHUB_PREPARATION.md) for the
-exact merged inputs and packaging checks. Credentials are not part of the repository.
+benchmark. [Repository preparation notes](docs/GITHUB_PREPARATION.md) describe the
+previous merged package; this package additionally includes Cursor support.
+Credentials are not part of the repository.
 
 ## Run the demo
 

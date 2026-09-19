@@ -22,3 +22,6 @@ htmlcov/
 dist/
 build/
 .cadloop/
+
+# Keep local Cursor configuration out; shared AGENTS.md is versioned instead.
+.cursor/

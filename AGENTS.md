@@ -39,7 +39,8 @@ candidate passed. Renderer failure is separate from geometric failure; inspect
 
 ## Account workflow for this repository
 
-Use the existing subscription-authenticated Codex host. Read docs/CODEX_ACCOUNT.md.
-Do not configure or start the separate API-provider loop unless the user explicitly
-requests it. Do not read, copy, commit or mount account tokens into generated-code
+Use the account-authenticated host chosen by the user: Codex or Cursor CLI.
+For Codex, read docs/CODEX_ACCOUNT.md; for Cursor, read docs/CURSOR_ACCOUNT.md.
+Do not switch hosts or configure/start the separate API-provider loop unless the
+user explicitly requests it. Cursor uses a Cursor account, not ChatGPT entitlement. Do not read, copy, commit or mount account tokens into generated-code
 workers. The included CADGenBench document is a protocol, not a benchmark result.

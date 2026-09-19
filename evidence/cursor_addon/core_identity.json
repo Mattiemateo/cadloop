@@ -1,0 +1,8 @@
+{
+  "source_archive": "CADLoop_GitHub_Ready.zip",
+  "archive_sha256": "ad76578d66ecc9b6f760ceb447ef8fa5505b70508f2e4052d8cc0303dbe3c500",
+  "comparison": "byte-for-byte",
+  "files_checked": 24,
+  "all_identical": true,
+  "scope": "src/**, pyproject.toml, scripts/start_codex.py and tests/test_codex_launcher.py"
+}

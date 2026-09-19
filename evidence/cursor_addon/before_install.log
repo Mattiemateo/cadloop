@@ -1,0 +1,25 @@
+........................................................................ [ 21%]
+........................................................................ [ 42%]
+........................................................................ [ 63%]
+........................................................................ [ 85%]
+......................s.....................F.....                       [100%]
+=================================== FAILURES ===================================
+_________________ test_lock_is_respected_by_a_separate_process _________________
+tests/test_transactions_adversarial.py:30: in test_lock_is_respected_by_a_separate_process
+    r=subprocess.run([sys.executable,'-c',code],capture_output=True,text=True,check=True)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/subprocess.py:577: in run
+    raise CalledProcessError(retcode, process.args,
+E   subprocess.CalledProcessError: Command '['/opt/pyvenv/bin/python', '-c', 'from pathlib import Path\nfrom cadloop.util import project_lock\nfrom cadloop.errors import CadLoopError\ntry:\n with project_lock(Path(\'/tmp/pytest-of-root/pytest-2/test_lock_is_respected_by_a_se0\')): print("acquired")\nexcept CadLoopError as e: print(e.code)\n']' returned non-zero exit status 1.
+============================= slowest 8 durations ==============================
+28.60s call     tests/test_loop_progress.py::test_numeric_improvement_is_not_mistaken_for_stall
+19.46s call     tests/test_loop.py::test_replay_runs_real_geometry_not_a_fake_checker
+11.48s call     tests/test_audit_regressions.py::test_requesting_render_after_no_render_creates_views
+9.76s call     tests/test_hardening_edges.py::test_render_only_checkpoint_launches_no_geometry_workers
+9.64s call     tests/test_project.py::test_failed_then_fixed_and_cached
+5.42s call     tests/test_audit_regressions.py::test_native_cache_cannot_satisfy_docker_request
+5.18s call     tests/test_audit_regressions.py::test_timed_out_evaluation_does_not_poison_cache
+5.05s call     tests/test_hardening_edges.py::test_preview_worker_failure_does_not_erase_geometry_acceptance
+=========================== short test summary info ============================
+FAILED tests/test_transactions_adversarial.py::test_lock_is_respected_by_a_separate_process - subprocess.CalledProcessError: Command '['/opt/pyvenv/bin/python', '-c', 'from pathlib import Path\nfrom cadloop.util import project_lock\nfrom cadloop.errors import CadLoopError\ntry:\n with project_lock(Path(\'/tmp/pytest-of-root/pytest-2/test_lock_is_respected_by_a_se0\')): print("acquired")\nexcept CadLoopError as e: print(e.code)\n']' returned non-zero exit status 1.
+1 failed, 336 passed, 1 skipped in 135.19s (0:02:15)
