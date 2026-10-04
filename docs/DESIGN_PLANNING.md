@@ -171,6 +171,22 @@ component or requirement IDs. No independent dimension text, arbitrary SVG/XML,
 remote resources or scripts are accepted. Text is escaped; invalid XML characters
 are rejected. The same contract produces byte-identical SVGs.
 
+Geometric enum choices use `diagram_spec.variant_sets`: each set declares an
+`id`, a canonical enum `parameter_ref`, and `cases` mapping supported enum values
+to complete front/side/top primitive layers. The renderer adds the selected layer
+to the shared `views`; `design-answer` selects it through the parameter update,
+without parsing the option's label or description. Case IDs and references are
+validated even in unselected layers. Each case must contain actual geometry and
+different cases cannot differ only in labels, dimensions or ignored fields.
+
+An unresolved binding displays an incomplete-geometry notice and blocks freeze.
+A selected value without an authored case blocks both rendering and freeze;
+there is no silent fallback to another option. Static diagrams remain supported
+with byte-compatible serialization. Only explicitly bound enum geometry is
+dynamic: ordinary labels and numeric dimensions do not generate or scale CAD.
+The author must supply reviewed layers for each supported geometric alternative.
+These normalized sketches do not establish dimensions, fit or manufacturability.
+
 After any proposal or answer, old sketches remain with their old revision and do
 not count as current review. Render the new revision and show it to the user.
 `design-freeze --base REVISION` requires a clean deterministic audit and valid

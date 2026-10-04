@@ -10,6 +10,29 @@ from .contracts import DesignContract, DiagramPrimitive, ParameterSpec
 VIEWS = ("front", "side", "top")
 
 
+def diagram_views(contract: DesignContract) -> tuple[dict[str, list[DiagramPrimitive]], list[dict]]:
+    """Select authored layers by canonical value, never by interpreting option text."""
+    views = {view: list(contract.diagram_spec.views.get(view, [])) for view in VIEWS}
+    issues = []
+    parameters = {parameter.id: parameter for parameter in contract.parameters}
+    for variants in contract.diagram_spec.variant_sets:
+        parameter = parameters[variants.parameter_ref]
+        selected = variants.cases.get(parameter.value)
+        if selected is None:
+            unknown = parameter.value is None
+            issues.append({
+                "code": "DIAGRAM_VARIANT_UNRESOLVED" if unknown else "DIAGRAM_VARIANT_UNSUPPORTED",
+                "id": variants.id, "parameter_ref": parameter.id, "value": parameter.value,
+                "needs_input": unknown,
+                "message": (f"Concept geometry is awaiting a choice for {parameter.id}." if unknown else
+                            f"No concept geometry is supplied for {parameter.id} = {parameter.value}."),
+            })
+            continue
+        for view in VIEWS:
+            views[view].extend(selected[view])
+    return views, issues
+
+
 def _number(value: float | int) -> str:
     return format(value, ".12g")
 
@@ -105,6 +128,12 @@ def _primitive(p: DiagramPrimitive, contract: DesignContract) -> list[str]:
 def render_svgs(contract: DesignContract) -> dict[str, str]:
     """Return byte-stable UTF-8 SVG text; concept layout is explicitly not CAD."""
     contract = DesignContract.model_validate(contract.model_dump())
+    views, issues = diagram_views(contract)
+    unsupported = [issue for issue in issues if issue["code"] == "DIAGRAM_VARIANT_UNSUPPORTED"]
+    if unsupported:
+        raise CadLoopError("PLANNING_DIAGRAM_VARIANT_UNSUPPORTED",
+                           "Author concept geometry for the selected parameter values before review.",
+                           issues=unsupported)
     result = {}
     for view in VIEWS:
         lines = [
@@ -116,11 +145,13 @@ def render_svgs(contract: DesignContract) -> dict[str, str]:
             '<rect width="1000" height="1100" fill="white"/>',
             '<g stroke="#17212b" stroke-width="2" font-family="sans-serif">',
         ]
-        primitives = contract.diagram_spec.views.get(view, [])
+        primitives = views[view]
         for primitive in primitives:
             lines.extend(_primitive(primitive, contract))
         if not primitives:
             lines.append(_text(40, 80, "No concept primitives supplied for this view."))
+        if issues:
+            lines.append(_text(40, 140, "Concept geometry incomplete: awaiting parameter choices."))
         lines.extend([
             "</g>",
             _text(30, 1040, f"{view.upper()} | planning revision {contract.revision}"),
