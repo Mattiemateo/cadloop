@@ -115,6 +115,24 @@ Check = Annotated[Union[DimensionCheck, HolesCheck, ClearanceCheck, CoaxialCheck
                   Field(discriminator="kind")]
 
 
+def parameter_values(value):
+    if not isinstance(value, dict):
+        raise ValueError("Parameters must be an object")
+    for item in value.values():
+        if type(item) not in (int, float, bool) or (type(item) is float and not math.isfinite(item)):
+            raise ValueError("Only finite numeric or boolean parameter values are accepted")
+    return value
+
+
+class ParametricTest(Strict):
+    id: str = Field(pattern=NAME)
+    description: str = Field(min_length=1)
+    parameters: dict[str, float | int | bool] = Field(min_length=1, max_length=16)
+    overrides: list[Check] = Field(min_length=1, max_length=128)
+
+    _typed_values = field_validator("parameters", mode="before")(parameter_values)
+
+
 class Requirements(Strict):
     schema_version: Literal[1] = 1
     name: str
@@ -127,6 +145,7 @@ class Requirements(Strict):
     numerical_mm: float = Field(default=1e-6, gt=0, le=1e-3)
     max_overlap_mm3: float = Field(default=1e-5, gt=0, le=0.01)
     engineering_blockers: list[str] = Field(min_length=1)
+    parametric_tests: list[ParametricTest] = Field(default_factory=list, max_length=12)
 
     @model_validator(mode="after")
     def references(self):
@@ -161,7 +180,51 @@ class Requirements(Strict):
                 expected = "plane" if c.kind == "plane_contact" else "cylinder"
                 if self.refs[c.a].kind != expected or self.refs[c.b].kind != expected:
                     raise ValueError("Reference kind does not match check")
+        scenario_ids = [s.id for s in self.parametric_tests]
+        if len(scenario_ids) != len(set(scenario_ids)):
+            raise ValueError("Duplicate parametric scenario id")
+        by_id = {c.id: c for c in self.checks}
+        for scenario in self.parametric_tests:
+            for name, value in scenario.parameters.items():
+                if name not in self.parameters:
+                    raise ValueError("Unknown scenario parameter")
+                self.parameters[name].validate_value(value)
+            overrides = [c.id for c in scenario.overrides]
+            if len(overrides) != len(set(overrides)):
+                raise ValueError("Duplicate scenario check override")
+            changed_target = False
+            for check in scenario.overrides:
+                original = by_id.get(check.id)
+                if original is None or original.kind != check.kind or getattr(original, "part", None) != getattr(check, "part", None):
+                    raise ValueError("Scenario overrides must retain check id, kind and target part")
+                if check.kind == "dimension":
+                    if check.axis != original.axis or check.minimum > check.maximum:
+                        raise ValueError("Scenario dimension must retain its axis and ordered bounds")
+                    if check.maximum - check.minimum > original.maximum - original.minimum + self.numerical_mm:
+                        raise ValueError("Scenario cannot widen dimension tolerance")
+                    changed_target |= (check.minimum > original.maximum + self.numerical_mm or
+                                       check.maximum < original.minimum - self.numerical_mm)
+                elif check.kind == "through_holes_z":
+                    if not check.holes or check.tolerance > original.tolerance:
+                        raise ValueError("Scenario hole targets must be nonempty and cannot loosen tolerance")
+                    tolerance = original.tolerance + check.tolerance
+                    changed_target |= len(check.holes) != len(original.holes) or any(
+                        not any(math.hypot(h.x - old.x, h.y - old.y) <= tolerance and
+                                abs(h.radius - old.radius) <= tolerance for old in original.holes)
+                        for h in check.holes)
+                else:
+                    raise ValueError("Scenario responses currently support dimensions and analytic Z holes; other checks remain invariants")
+            if not changed_target:
+                raise ValueError("Scenario needs a demonstrably changed geometric target")
         return self
+
+    def for_scenario(self, scenario: ParametricTest):
+        """Derive approved variant targets without altering nominal requirements."""
+        replacements = {c.id: c.model_dump() for c in scenario.overrides}
+        data = self.model_dump()
+        data["checks"] = [replacements.get(c.id, c.model_dump()) for c in self.checks]
+        data["parametric_tests"] = []
+        return Requirements.model_validate(data)
 
     def validate_parameters(self, p: dict):
         if set(p) != set(self.parameters):
@@ -188,12 +251,7 @@ class Proposal(Strict):
     @field_validator("parameters", mode="before")
     @classmethod
     def typed_numbers(cls, v):
-        if not isinstance(v, dict):
-            raise ValueError("Parameters must be an object")
-        for x in v.values():
-            if type(x) not in (int, float, bool) or (type(x) is float and not math.isfinite(x)):
-                raise ValueError("Only finite numeric or boolean parameter values are accepted")
-        return v
+        return parameter_values(v)
 
 
 class Action(Strict):

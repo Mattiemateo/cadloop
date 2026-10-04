@@ -12,8 +12,9 @@ from .contracts import Requirements, Proposal
 from .errors import CadLoopError
 from .util import (read_json, write_json, digest, tree_hashes, within, file_hash,
                    versions, package_digest, project_lock)
-from .execution import run_stage
+from .execution import run_stage, runtime_identity
 from .feedback import compact
+from .parametric import accepted, run_scenarios, apply_gate
 
 
 class Project:
@@ -195,15 +196,31 @@ class Project:
             raise CadLoopError("STALE_REVISION", "Latest geometry does not belong to the current source; evaluate it first")
         return run, report
 
-    def _render_preview(self, run, *, timeout):
-        execution = run_stage("render", run, mode="trusted-native", timeout=timeout)
-        write_json(run / "preview_execution.json", execution)
-        if execution["exit_code"] != 0:
-            write_json(run / "view_error.json", {
-                "code":"VIEW_TIMEOUT" if execution["timed_out"] else "VIEW_FAILED",
-                "message":"The preview worker failed; independent geometric measurements are unchanged.",
-                "execution":execution})
-        shutil.rmtree(run / "tmp", ignore_errors=True)
+    def _render_preview(self, run, *, timeout, mode="trusted-native", runtime=None):
+        options = {"image": runtime["image_id"]} if mode == "docker" else {}
+        try:
+            execution = run_stage("render", run, mode=mode, timeout=timeout, **options)
+            write_json(run / "preview_execution.json", execution)
+            if execution["exit_code"] != 0:
+                write_json(run / "view_error.json", {
+                    "code":"VIEW_TIMEOUT" if execution["timed_out"] else "VIEW_FAILED",
+                    "message":"The preview worker failed; independent geometric measurements are unchanged.",
+                    "execution":execution})
+            elif mode == "docker":
+                preview = run / "preview"
+                tree_hashes(preview)  # Reject symlinks before moving renderer output.
+                if read_json(preview / "views/manifest.json")["revision"] != read_json(run / "verification/report.json")["revision"]:
+                    raise CadLoopError("STALE_REVISION", "Renderer returned a different revision")
+                if not (preview / "views/overview.png").is_file() or not (preview / "views/section_xz.png").is_file():
+                    raise CadLoopError("VIEW_UNAVAILABLE", "Renderer did not produce required previews")
+                report_html = within(preview, "report.html")
+                shutil.rmtree(run / "views", ignore_errors=True)
+                shutil.move(str(preview / "views"), run / "views")
+                shutil.move(str(report_html), run / "report.html")
+        finally:
+            if mode == "docker":
+                shutil.rmtree(run / "preview", ignore_errors=True)
+            shutil.rmtree(run / "tmp", ignore_errors=True)
 
     def evaluate(self, *, mode: str, timeout=45., force=False, render=True):
         from .worker import make_report
@@ -215,17 +232,24 @@ class Project:
         with project_lock(self.control):
             revision = self.revision()
             req = self.requirements()
+            runtime, runtime_error = None, None
+            try:
+                runtime = runtime_identity(mode)
+            except Exception as exc:
+                runtime_error = exc
+            stage_options = {"image": runtime["image_id"]} if mode == "docker" and runtime else {}
             if not force:
                 latest = self.latest(require_current=False)
                 if latest and latest[1]["revision"] == revision:
                     cached_run, cached_report = latest
                     execution = read_json(cached_run / "execution.json")
                     stages = execution.get("stages", [])
-                    reuse = (execution.get("mode") == mode and len(stages) == 2
+                    reuse = (runtime is not None and execution.get("runtime") == runtime
+                             and execution.get("mode") == mode and len(stages) == 2
                              and all(s.get("exit_code") == 0 and not s.get("timed_out") for s in stages)
                              and cached_report["summary"]["indeterminate"] == 0)
                     has_views = (cached_run / "views" / "overview.png").is_file() and (cached_run / "report.html").is_file()
-                    if reuse and render and mode == "trusted-native" and not has_views:
+                    if reuse and render and not has_views:
                         # Derive a NEW sealed view checkpoint; do not mutate old evidence
                         # or rerun CAD merely because an image was requested later.
                         view_run = self.control / "runs" / (revision[:12] + "-" + uuid.uuid4().hex[:8])
@@ -233,14 +257,14 @@ class Project:
                         (view_run / "receipt.json").unlink(missing_ok=True)
                         (view_run / "view_error.json").unlink(missing_ok=True)
                         try:
-                            self._render_preview(view_run, timeout=timeout)
+                            self._render_preview(view_run, timeout=timeout, mode=mode, runtime=runtime)
                         except Exception as e:
                             write_json(view_run / "view_error.json", {"code":"VIEW_UNAVAILABLE", "message":str(e)})
                         write_json(view_run / "derived_from.json", {"run_id":cached_run.name,
                                    "operation":"render_only", "geometry_reused":True})
                         self._seal(view_run)
                         write_json(self.control / "latest.json", {"run_id":view_run.name, "revision":revision})
-                        if cached_report["geometry_accepted"]:
+                        if accepted(cached_report):
                             write_json(self.control / "last_accepted.json", {"run_id":view_run.name, "revision":revision})
                         self.event("view_checkpoint", {"run_id":view_run.name, "source_run_id":cached_run.name})
                         cached_run = view_run
@@ -257,15 +281,18 @@ class Project:
             before = tree_hashes(run / "input")
             stages = []
             report = None
+            outcomes = []
             try:
-                build_stage = run_stage("build", run, mode=mode, timeout=timeout)
+                if runtime_error:
+                    raise runtime_error
+                build_stage = run_stage("build", run, mode=mode, timeout=timeout, **stage_options)
                 stages.append(build_stage)
                 if build_stage["exit_code"] != 0:
                     raise CadLoopError("BUILD_TIMEOUT" if build_stage["timed_out"] else "BUILD_FAILED",
                                        "CAD build failed; inspect build logs", execution=build_stage)
                 if tree_hashes(run / "input") != before:
                     raise CadLoopError("INPUT_MUTATED", "The build worker altered its input files")
-                verification = run_stage("verify", run, mode=mode, timeout=timeout)
+                verification = run_stage("verify", run, mode=mode, timeout=timeout, **stage_options)
                 stages.append(verification)
                 if verification["exit_code"] != 0:
                     raise CadLoopError("VERIFY_TIMEOUT" if verification["timed_out"] else "VERIFY_FAILED",
@@ -275,34 +302,40 @@ class Project:
                     raise CadLoopError("STALE_REVISION", "Verifier returned the wrong revision")
                 if tree_hashes(run / "input") != before or self.revision() != revision:
                     raise CadLoopError("INPUT_MUTATED", "Input or source changed during evaluation")
+                geometry_before = tree_hashes(run / "geometry")
+                verification_before = tree_hashes(run / "verification")
+                if report["geometry_accepted"] and req.parametric_tests:
+                    outcomes = run_scenarios(run, req, revision, mode=mode, timeout=timeout, runtime=runtime)
+                if (tree_hashes(run / "input") != before or self.revision() != revision or
+                        tree_hashes(run / "geometry") != geometry_before or
+                        tree_hashes(run / "verification") != verification_before):
+                    raise CadLoopError("INPUT_MUTATED", "Nominal source or evidence changed during parameter tests")
             except Exception as e:
                 checks = [result("AUTO_execution", "indeterminate", getattr(e, "code", "EXECUTION_ERROR"),
                                  str(e), e.details if isinstance(e, CadLoopError) else {})]
                 checks.extend(result(c.id, "indeterminate", "BUILD_UNAVAILABLE", c.description,
                                      hint=c.edit_hint) for c in req.checks)
                 report = make_report(revision, req, checks)
-                write_json(run / "verification" / "report.json", report)
-            write_json(run / "execution.json", {"stages": stages, "mode": mode,
+            report = apply_gate(report, req, outcomes)
+            write_json(run / "verification" / "report.json", report)
+            write_json(run / "execution.json", {"stages": stages, "mode": mode, "runtime": runtime,
                                                  "native_security_warning": mode == "trusted-native"})
             write_json(run / "feedback.json", compact(report))
             # Rendering is trusted, separate from generated code; it cannot change acceptance.
-            if render and mode == "docker":
-                write_json(run / "view_error.json", {"code": "HOST_PREVIEW_DISABLED",
-                           "message": "Docker mode does not parse potentially untrusted BREP in the host renderer."})
-            if render and mode == "trusted-native" and (run / "geometry" / "scene.json").exists():
+            if render and (run / "geometry" / "scene.json").exists():
                 try:
-                    self._render_preview(run, timeout=timeout)
+                    self._render_preview(run, timeout=timeout, mode=mode, runtime=runtime)
                 except Exception as e:
                     write_json(run / "view_error.json", {"code": "VIEW_UNAVAILABLE", "message": str(e)})
             shutil.rmtree(run / "tmp", ignore_errors=True)
             self._seal(run)
             write_json(self.control / "latest.json", {"run_id": run_id, "revision": revision})
-            if report["geometry_accepted"]:
+            if accepted(report):
                 write_json(self.control / "last_accepted.json", {"run_id": run_id, "revision": revision})
             self.event("evaluation", {"revision": revision, "run_id": run_id, "status": report["status"]})
             return {**compact(report), "run_id": run_id, "cached": False, "run_directory": str(run)}
 
-    def inspect(self, *, check=None, part=None, source=False, path="model.py", start_line=1, max_lines=180):
+    def inspect(self, *, check=None, part=None, scenario=None, source=False, path="model.py", start_line=1, max_lines=180):
         if source:
             if (type(start_line) is not int or start_line < 1 or type(max_lines) is not int
                     or not 1 <= max_lines <= 180 or not path.endswith(".py")):
@@ -321,6 +354,13 @@ class Project:
         if latest is None:
             raise CadLoopError("NO_EVALUATION", "Evaluate the model first")
         run, report = latest
+        if scenario:
+            matches = [item for item in report.get("parametric_tests", []) if item["id"] == scenario]
+            if not matches:
+                raise CadLoopError("SCENARIO_NOT_RUN", "Scenario is unknown or nominal geometry prevented its execution")
+            evidence = within(run, matches[0]["run_directory"] + "/verification/report.json")
+            return {"revision": report["revision"], "scenario": scenario,
+                    "parameters": matches[0]["parameters"], "report": read_json(evidence)}
         if check:
             matches = [c for c in report["checks"] if c["id"] == check]
             if not matches:
@@ -341,7 +381,7 @@ class Project:
                 "latest_feedback": compact(latest[1]) if latest else None,
                 "latest_is_current": bool(latest and latest[1]["revision"] == revision),
                 "capabilities": ["dimension", "through_holes_z", "coaxial", "plane_contact",
-                                 "clearance", "all_pairs_no_overlap", "parameter_and_source_patches"],
+                                 "clearance", "all_pairs_no_overlap", "parameter_and_source_patches", "required_parameter_responses"],
                 "engineering_approved": False}
 
     def finish(self, *, mode, timeout=45.):
@@ -351,7 +391,7 @@ class Project:
     def _finish_locked(self, *, mode, timeout=45.):
         # Never trust a cached pass or the model's finish request. Rebuild and recheck.
         feedback = self.evaluate(mode=mode, timeout=timeout, force=True, render=True)
-        if not feedback["geometry_accepted"]:
+        if not accepted(feedback):
             return {**feedback, "exported": False}
         run = self.control / "runs" / feedback["run_id"]
         self.verify_receipt(run)
@@ -360,7 +400,7 @@ class Project:
             raise CadLoopError("STALE_REVISION", "Source changed before export")
         target = self.root / "exports" / run.name
         target.mkdir(parents=True, exist_ok=False)
-        for folder in ("input", "geometry", "verification", "views"):
+        for folder in ("input", "geometry", "verification", "views", "parametric_tests"):
             if (run / folder).exists():
                 shutil.copytree(run / folder, target / folder)
         for name in ("report.html", "feedback.json", "receipt.json", "execution.json",
@@ -369,5 +409,6 @@ class Project:
                 shutil.copy2(run / name, target / ("source_run_receipt.json" if name == "receipt.json" else name))
         write_json(target / "export_manifest.json", {"revision": report["revision"], "files": tree_hashes(target),
                                                      "geometry_accepted": True, "engineering_approved": False,
-                                                     "scope": "nominal_geometry_only"})
+                                                     "parametric_accepted": report.get("parametric_accepted"),
+                                                     "task_accepted": accepted(report), "scope": report["scope"]})
         return {**feedback, "exported": True, "export_directory": str(target)}

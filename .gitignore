@@ -25,3 +25,6 @@ build/
 
 # Keep local Cursor configuration out; shared AGENTS.md is versioned instead.
 .cursor/
+
+# Generated CAD models, export packages and copied run evidence
+artifacts/

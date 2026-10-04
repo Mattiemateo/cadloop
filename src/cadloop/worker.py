@@ -140,6 +140,7 @@ def main():
     p.add_argument("stage", choices=["build", "verify", "render"])
     p.add_argument("--input", type=Path, required=True)
     p.add_argument("--geometry", type=Path)
+    p.add_argument("--report", type=Path)
     p.add_argument("--output", type=Path, required=True)
     a = p.parse_args()
     try:
@@ -150,7 +151,12 @@ def main():
         else:
             from .views import render_report
             run = a.input.parent
-            render_report(run, read_json(run / "verification" / "report.json"))
+            if (a.geometry is None) != (a.report is None):
+                raise CadLoopError("VIEW_INPUT_INVALID", "Render requires both geometry and report paths")
+            if a.report is None:
+                render_report(run, read_json(run / "verification" / "report.json"))
+            else:
+                render_report(run, read_json(a.report), output_root=a.output, geometry_dir=a.geometry)
         print(json.dumps({"status": "completed", "stage": a.stage}))
     except BaseException as e:
         traceback.print_exc(file=sys.stderr)

@@ -59,7 +59,8 @@ def compact(report, *, detail_limit=8):
         brief={key:ev[key] for key in ('missing','unexpected','measured_mm','range_mm',
                     'distance_mm','parts','part','offset_mm','angle_deg','overlap_mm3',
                     'projected_contact_area_mm2','max_gap_mm','min_area_mm2',
-                    'max_offset_mm','max_angle_deg','match_count','duplicate') if key in ev}
+                    'max_offset_mm','max_angle_deg','match_count','duplicate',
+                    'scenario','parameters','blocker_ids','run_directory') if key in ev}
         if 'observed' in ev:
             brief['observed_holes']=[{'center_xy_mm':h['axis_origin_mm'][:2],
                                       'radius_mm':h['radius_mm'],
@@ -76,6 +77,9 @@ def compact(report, *, detail_limit=8):
                         'message':c['message'],'measurement':brief,'edit_hint':c['edit_hint']})
     return {'schema_version':1,'revision':report['revision'],'status':report['status'],
             'geometry_accepted':report['geometry_accepted'],'engineering_approved':False,
+            'parametric_accepted':report.get('parametric_accepted'),
+            'task_accepted':report.get('task_accepted',report['geometry_accepted']),
+            'parametric_tests':report.get('parametric_tests',[]),
             'summary':report['summary'],'blocker_ids':[c['id'] for c in blockers],
             'blockers':details,'more_blocker_details':max(0,len(blockers)-detail_limit),
             'inspect_instruction':'Use inspect --check CHECK_ID for full evidence.',

@@ -2,7 +2,11 @@
 
 A working local CAD feedback harness: generate solids, inspect the **exported geometry** in a separate process, make a small revision-bound repair, and verify again.
 
-**Tested execution path:** CadQuery 2.8.0 / OpenCascade 7.9.3.1.1 on Linux, Python 3.13.5. A build123d authoring example uses the same shape interface, but remains untested here because the dependency is unavailable and its installation attempt failed. The planned `agentcad` integration is not implemented in this version. See `docs/STATUS.md` for the exact scope.
+**Kerf integration:** import a versioned Kerf spec and Build123d source into the existing independent verification/repair workflow. See [docs/KERF.md](docs/KERF.md) for installation, the carrier example, fresh export commands and current limits.
+
+**Parameter-response gate:** completion can require measured parameter changes while preserving other interfaces. Docker cache entries include image/policy identity, and previews run in Docker. [Tests and benchmark results](docs/PARAMETRIC_RESULTS.md): 425 tests pass; the six-case synthetic benchmark reduces false accepts from 9 to 0 across three repeats, with measured execution overhead.
+
+**Original v0.1.1 delivery:** CadQuery 2.8.0 / OpenCascade 7.9.3.1.1 on Linux, Python 3.13.5; Build123d was not exercised in that delivery. The Kerf integration above adds Build123d/Docker evidence. The planned `agentcad` integration remains unimplemented. See `docs/STATUS.md` for historical scope and `docs/KERF.md` for the new work.
 
 **Adversarial audit:** 214 tests passed and 1 optional dependency test skipped in the expanded run. See `AUDIT.md` for reproduced bugs, regression coverage, measured overhead, and limitations. No live-model cost or quality result is claimed.
 
@@ -149,3 +153,9 @@ The local source and parameters remain editable. STEP contains geometry, not the
 The last command executes the included reviewed fixture without a sandbox. The
 benchmark compares identical hardened checks with and without transient query
 memoization; it is not a claim about LLM speed or general assembly performance.
+
+## Reusable parts and real task example
+
+[608 bearing parts](parts/README.md) provide measured carrier, retainer and REV hex-sleeve solids; copy the module into a design before revision creation. The [BIOBUZZ shooter example](examples/biobuzz_shooter/README.md) includes a 3 mm plywood/printed shooter, cast silicone wheel mold, trajectory model, manufacturing exporter and independent BREP checks. Geometry acceptance retains explicit physical-validation blockers.
+
+Generated models, exports, packages and run evidence stay local under ignored `work/` and `artifacts/` directories; editable design sources and reproduction scripts are versioned.

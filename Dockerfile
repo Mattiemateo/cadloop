@@ -1,7 +1,7 @@
-# Deployment profile: provided but not built/tested in the delivery environment.
+# Build and verification profile; see docs/KERF.md for the exercised environment.
 FROM python:3.13-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1 libglib2.0-0 libxrender1 libxext6 \
+    libgl1 libegl1 libglib2.0-0 libxrender1 libxext6 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/cadloop
 COPY pyproject.toml README.md ./

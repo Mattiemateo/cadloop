@@ -70,8 +70,8 @@ def section_lines(shape):
 def render_depth_buffer(parts):
     """Opaque, depth-buffered preview: transparent painter sorting can hide holes.
 
-    VTK is supplied by the pinned cadquery-ocp dependency. The native renderer
-    requires a working offscreen graphics backend; failures are not measurements.
+    VTK is supplied by the pinned cadquery-ocp dependency. Rendering requires a
+    working offscreen graphics backend; failures are not measurements.
     """
     import vtk
     from vtk.util.numpy_support import vtk_to_numpy
@@ -125,10 +125,12 @@ def render_depth_buffer(parts):
     return raster, handles
 
 
-def render_report(run: Path, report: dict):
-    parts = load_geometry(run / "geometry")
-    view_dir = run / "views"
-    view_dir.mkdir(exist_ok=True)
+def render_report(run: Path, report: dict, *, output_root: Path | None = None,
+                  geometry_dir: Path | None = None):
+    parts = load_geometry(geometry_dir or run / "geometry")
+    output_root = output_root or run
+    view_dir = output_root / "views"
+    view_dir.mkdir(parents=True, exist_ok=True)
     title = report["status"].replace("_", " ")
     revision = report["revision"][:12]
     raster, handles = render_depth_buffer(parts)
@@ -191,4 +193,4 @@ pre{{overflow:auto;max-height:360px;font-size:12px}}code{{overflow-wrap:anywhere
 <div class="card"><h2>Checks and raw measurements</h2><table><thead><tr><th>Check</th><th>Result</th><th>Evidence</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div>
 <p class="meta">Generated from revision-matched solid geometry. Pictures aid review; measurements determine the check results. This page is self-contained and makes no external network requests.</p>
 </body></html>'''
-    (run / "report.html").write_text(content)
+    (output_root / "report.html").write_text(content)

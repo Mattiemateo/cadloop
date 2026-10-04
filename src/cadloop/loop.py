@@ -10,6 +10,7 @@ from .contracts import Strict, Action
 from .budget import Budget
 from .errors import CadLoopError
 from .util import read_json, write_json, digest, project_lock, strict_loads
+from .parametric import accepted
 
 SYSTEM = """You repair CAD using measured feedback. Return one JSON Action object.
 Reuse the existing functions. Prefer a parameter patch; make the smallest sufficient
@@ -57,6 +58,7 @@ def context(project, feedback, *, allow_source_edits=False, include_source=None)
             "allowed_parameters": {k:v.model_dump(exclude_none=True) for k,v in req.parameters.items()},
             "expected_parts": req.expected_parts,
             "requirements": [c.model_dump(exclude={"description","edit_hint"},exclude_none=True) for c in req.checks],
+            "parametric_tests": [s.model_dump(exclude_none=True) for s in req.parametric_tests],
             "references": {k:v.model_dump(exclude_none=True) for k,v in req.refs.items()},
             "feedback": feedback, "edit_mode":"source_and_parameters" if allow_source_edits else "parameters_only",
             "action_schema": action_schema(allow_source_edits=allow_source_edits)}
@@ -167,8 +169,8 @@ def repair_loop(project, provider, *, mode, max_steps=6, allow_source_edits=Fals
         final_status = "STEP_LIMIT"
         try:
             for step in range(max_steps):
-                if feedback["geometry_accepted"]:
-                    final_status = "GEOMETRY_ACCEPTED"
+                if accepted(feedback):
+                    final_status = feedback["status"]
                     break
                 ctx = context(project, feedback, allow_source_edits=allow_source_edits, include_source=include_source)
                 if state["steps"]:
@@ -195,13 +197,13 @@ def repair_loop(project, provider, *, mode, max_steps=6, allow_source_edits=Fals
                 stale_progress = stale_progress + 1 if current >= previous else 0
                 previous = current
                 write_json(progress_path, state)
-                if feedback["geometry_accepted"]:
-                    final_status = "GEOMETRY_ACCEPTED"
+                if accepted(feedback):
+                    final_status = feedback["status"]
                     break
                 if stale_progress >= 2:
                     final_status = "ESCALATION_REQUIRED"
                     break
-            if feedback["geometry_accepted"]:
+            if accepted(feedback):
                 final = project.finish(mode=mode, timeout=timeout)
                 feedback = final
                 final_status = final["status"]

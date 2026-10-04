@@ -1,5 +1,9 @@
 # Delivery status and deviations
 
+September 29 update: see [KERF.md](KERF.md) for the Kerf importer, Build123d/Docker verification and macOS installation evidence. The sections below record the original delivery.
+
+The next increment adds required parameter responses, runtime-aware cache reuse and Docker previews. See [PARAMETRIC_RESULTS.md](PARAMETRIC_RESULTS.md) for 425 passing tests, the repeated checker benchmark, runtime costs and remaining scope.
+
 This is an implemented prototype, not completion of every milestone in the original architecture.
 
 ## Implemented and exercised
@@ -101,3 +105,7 @@ Cursor CLI download failed due to DNS resolution in this environment. Live Curso
 login/inference, sandbox efficacy, and macOS support are unverified. Cursor uses a
 separate Cursor account, not ChatGPT/Codex entitlement. The shared `AGENTS.md` now
 recognizes both hosts. See `docs/CURSOR_ACCOUNT.md` before running.
+
+## September 29: BIOBUZZ real task and reusable parts
+
+Added the [608 parts library](../parts/README.md) and [BIOBUZZ shooter/mold example](../examples/biobuzz_shooter/README.md). Fresh Docker finish: 471 shooter checks, 470 in its 70° response rebuild, 23 mold checks; independent BREP audits and manufacturing mesh checks pass. Full repository suite: 431 passed in 133.35 s. Actual turret, fit, materials and scored shots remain engineering blockers. [Results and scope](../examples/biobuzz_shooter/RESULTS.md).

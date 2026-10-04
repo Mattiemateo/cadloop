@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "name": "Synthetic bearing-carrier integration contract",
+  "description": "Fixed test targets in an XY-centered frame, base at Z = 0; independent of Kerf's proposed parameter values.",
+  "units": "mm",
+  "expected_parts": ["carrier"],
+  "parameters": {
+    "length": {"kind": "number", "unit": "mm", "minimum": 45, "maximum": 60, "description": "Plate length"},
+    "width": {"kind": "number", "unit": "mm", "minimum": 35, "maximum": 50, "description": "Plate width"},
+    "thickness": {"kind": "number", "unit": "mm", "minimum": 6, "maximum": 12, "description": "Plate thickness"},
+    "bore_diameter": {"kind": "number", "unit": "mm", "minimum": 20, "maximum": 24, "description": "Central bore diameter"},
+    "mount_diameter": {"kind": "number", "unit": "mm", "minimum": 3, "maximum": 5, "description": "Mounting hole diameter"},
+    "mount_x": {"kind": "number", "unit": "mm", "minimum": 16, "maximum": 20, "description": "Mounting half pitch X"},
+    "mount_y": {"kind": "number", "unit": "mm", "minimum": 11, "maximum": 15, "description": "Mounting half pitch Y"}
+  },
+  "checks": [
+    {"id": "length", "kind": "dimension", "part": "carrier", "axis": "x", "minimum": 49.99, "maximum": 50.01, "description": "Length 50.00 +/- 0.01 mm"},
+    {"id": "width", "kind": "dimension", "part": "carrier", "axis": "y", "minimum": 39.99, "maximum": 40.01, "description": "Width 40.00 +/- 0.01 mm"},
+    {"id": "thickness", "kind": "dimension", "part": "carrier", "axis": "z", "minimum": 7.99, "maximum": 8.01, "description": "Thickness 8.00 +/- 0.01 mm"},
+    {"id": "interfaces", "kind": "through_holes_z", "part": "carrier", "tolerance": 0.001,
+     "description": "22 mm central bore and four 4 mm mounting holes at (+/-18, +/-13) mm; radius/position tolerance 0.001 mm",
+     "edit_hint": "Inspect measured hole defects; change bore_diameter locally if the central bore is undersized.",
+     "holes": [{"x": 0, "y": 0, "radius": 11}, {"x": -18, "y": -13, "radius": 2}, {"x": -18, "y": 13, "radius": 2}, {"x": 18, "y": -13, "radius": 2}, {"x": 18, "y": 13, "radius": 2}]}
+  ],
+  "engineering_blockers": [
+    "Synthetic integration fixture; bearing fit, retention and actual hardware dimensions are unreviewed.",
+    "Material, loading, strength, manufacturing tolerances and dynamic clearance are unverified.",
+    "STEP is geometry only; native Onshape feature editability is not implemented."
+  ]
+}

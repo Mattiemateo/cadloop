@@ -2,6 +2,7 @@
 from __future__ import annotations
 from .errors import CadLoopError
 from .util import project_lock
+from .parametric import accepted
 
 
 def search_parameter(project, parameter: str, values: list, *, mode: str,
@@ -40,7 +41,7 @@ def _search_locked(project, parameter, values, *, mode, fixed, timeout, max_eval
             records.append({"value": params[parameter], "run_id": report["run_id"],
                             "revision": report["revision"], "status": report["status"],
                             "summary": report["summary"], "blocker_ids": report["blocker_ids"]})
-            if report["geometry_accepted"]:
+            if accepted(report):
                 winner = params
                 break
     except BaseException:
@@ -58,7 +59,7 @@ def _search_locked(project, parameter, values, *, mode, fixed, timeout, max_eval
     else:
         # Full fresh evaluation, not a search-run shortcut, produces final evidence.
         final = project.evaluate(mode=mode, timeout=timeout, force=True, render=True)
-    confirmed = winner is not None and final["geometry_accepted"]
+    confirmed = winner is not None and accepted(final)
     status = ("FEASIBLE_CANDIDATE_FOUND" if confirmed else
               "FINAL_VALIDATION_FAILED" if winner is not None else "NO_FEASIBLE_CANDIDATE")
     project.event("parameter_search", {"parameter": parameter, "attempts": records, "found": confirmed,

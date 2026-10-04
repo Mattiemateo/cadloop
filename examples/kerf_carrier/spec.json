@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "part_spec": {
+    "name": "Synthetic bearing carrier",
+    "description": "Integration fixture, not a reviewed hardware design. Initial bore is deliberately undersized; independently approved requirements demand 22 mm.",
+    "units": "mm"
+  },
+  "parameters": [
+    {"name": "length", "value": 50, "unit": "mm", "description": "Plate length", "constraints": {"min": 45, "max": 60}},
+    {"name": "width", "value": 40, "unit": "mm", "description": "Plate width", "constraints": {"min": 35, "max": 50}},
+    {"name": "thickness", "value": 8, "unit": "mm", "description": "Plate thickness", "constraints": {"min": 6, "max": 12}},
+    {"name": "bore_diameter", "value": 20, "unit": "mm", "description": "Central through bore, initially faulty", "constraints": {"min": 20, "max": 24}},
+    {"name": "mount_diameter", "value": 4, "unit": "mm", "description": "Four mounting holes", "constraints": {"min": 3, "max": 5}},
+    {"name": "mount_x", "value": 18, "unit": "mm", "description": "Mounting half pitch in X", "constraints": {"min": 16, "max": 20}},
+    {"name": "mount_y", "value": 13, "unit": "mm", "description": "Mounting half pitch in Y", "constraints": {"min": 11, "max": 15}}
+  ],
+  "feature_sequence": [
+    {"type": "sketch", "parameters": ["length", "width"], "rationale": "Center the rectangular plate on the XY origin."},
+    {"type": "extrude", "parameters": ["thickness"], "rationale": "Build upward from Z = 0."},
+    {"type": "hole", "parameters": ["bore_diameter", "thickness"], "rationale": "Cut the central bore through the whole plate."},
+    {"type": "pattern", "parameters": ["mount_diameter", "mount_x", "mount_y", "thickness"], "rationale": "Four Z through holes at the signed half pitches."}
+  ]
+}
