@@ -157,6 +157,9 @@ Array indexes, arbitrary paths, Python and execution payloads are unsupported.
 Answering multiple active questions commits one revision; stale/unknown questions,
 invalid options, duplicate answers and conflicting update paths reject the entire
 batch. Accepted choices cannot be silently undone by a later agent proposal.
+This protection includes the selected parameter's kind, units, mode, bounds,
+enum choices and derivation/objective semantics, not just the selected scalar.
+Changing those semantics requires a new explicit decision or reopening the plan.
 
 ## Concept sketches and freeze
 
@@ -209,12 +212,21 @@ from nominal fastener sizes. Existing boolean parameter schemas cannot enforce a
 fixed truth value; such enforcement remains explicitly unsupported rather than
 being silently exposed as an unrestricted boolean.
 
+The existing numeric parameter schema also requires both finite bounds. A
+one-sided `BOUNDED` planning parameter remains in the handoff but blocks
+materialization until a reviewed planning revision supplies the other bound.
+The adapter never drops the approved limit or invents the missing one. This
+restriction applies even when the parameter's impact is below `CRITICAL`.
+
 `design-materialize` imports reviewed CAD source into the same frozen workspace,
 then uses ordinary `Project` build/repair/finish operations. Mandatory unsupported
 geometric intent blocks materialization. Supplying `--requirements` cannot bypass
 that blocker. Optional reviewed requirements may add checks but must preserve all
-compiled targets, approved bounds and engineering blockers. Resolve unsupported
-mandatory intent through reviewed planning revisions before materialization.
+compiled targets, approved bounds and engineering blockers. Every unsupported
+intent marked `geometry_required: true` is mandatory, regardless of its linked
+requirement's impact or whether requirement references were supplied. Resolve
+unsupported mandatory intent through reviewed planning revisions before
+materialization.
 The import has a recovery journal and writes the existing project anchor last as
 its commit marker. An interrupted import is recovered under the shared controller
 lock; only unchanged, hash-matching partial files owned by that import may be

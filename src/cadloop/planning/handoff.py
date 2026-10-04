@@ -178,9 +178,7 @@ def compile_requirements(contract: DesignContract) -> dict:
             check = _check(intent, parameters)
         except ValueError as exc:
             unsupported.append({"code": "PLANNING_VERIFICATION_UNSUPPORTED", "id": intent.id,
-                                "message": str(exc), "critical": intent.geometry_required and any(
-                                    requirements[r].hard and requirements[r].impact == "CRITICAL"
-                                    for r in intent.requirement_refs)})
+                                "message": str(exc), "critical": intent.geometry_required})
         else:
             checks.append(check)
             translated_requirements.update(intent.requirement_refs)
@@ -189,7 +187,7 @@ def compile_requirements(contract: DesignContract) -> dict:
         if requirement.id not in translated_requirements:
             unsupported.append({"code": "PLANNING_REQUIREMENT_HANDOFF_ONLY", "id": requirement.id,
                                 "message": "Requirement has no fully translated geometric verification intent",
-                                "critical": any(intent.geometry_required and requirement.hard and requirement.impact == "CRITICAL"
+                                "critical": any(intent.geometry_required
                                                 for intent in contract.verification_intent if requirement.id in intent.requirement_refs)})
     adapted_parameters = {}
     for parameter in contract.parameters:
@@ -211,6 +209,13 @@ def compile_requirements(contract: DesignContract) -> dict:
             if lo is not None and hi is not None:
                 adapted_parameters[parameter.id] = Param(kind=parameter.kind, unit=parameter.unit,
                                                          minimum=lo, maximum=hi, description=parameter.name).model_dump()
+            elif parameter.mode == "BOUNDED":
+                # Existing Requirements require two finite bounds. Never erase
+                # the supplied side or invent the missing one: until a reviewed
+                # revision supplies it, import cannot enforce this parameter.
+                unsupported.append({"code": "PLANNING_PARAMETER_UNSUPPORTED", "id": parameter.id,
+                                    "message": "Existing numeric parameters require both bounds; preserve the approved one-sided limit and obtain a reviewed opposite bound before materialization",
+                                    "critical": True})
     if not checks:
         return {"requirements": None, "unsupported": unsupported}
     data = {
