@@ -29,6 +29,7 @@ class Param(Strict):
         return self
 
     def validate_value(self, value):
+        """Validate a value and return its canonical Python parameter type."""
         if self.kind == "boolean":
             if type(value) is not bool:
                 raise ValueError("Expected a boolean")
@@ -39,6 +40,7 @@ class Param(Strict):
                 raise ValueError("Expected an integer")
             if not self.minimum <= value <= self.maximum:
                 raise ValueError(f"Value must be in [{self.minimum}, {self.maximum}]")
+        return int(value) if self.kind == "integer" else value
 
 
 class CylinderRef(Strict):
@@ -188,7 +190,7 @@ class Requirements(Strict):
             for name, value in scenario.parameters.items():
                 if name not in self.parameters:
                     raise ValueError("Unknown scenario parameter")
-                self.parameters[name].validate_value(value)
+                scenario.parameters[name] = self.parameters[name].validate_value(value)
             overrides = [c.id for c in scenario.overrides]
             if len(overrides) != len(set(overrides)):
                 raise ValueError("Duplicate scenario check override")
@@ -229,11 +231,13 @@ class Requirements(Strict):
     def validate_parameters(self, p: dict):
         if set(p) != set(self.parameters):
             raise ValueError("Parameter keys must exactly match the approved schema")
+        normalized = {}
         for key, spec in self.parameters.items():
             try:
-                spec.validate_value(p[key])
+                normalized[key] = spec.validate_value(p[key])
             except ValueError as e:
                 raise ValueError(f"{key}: {e}") from e
+        return normalized
 
 
 class SourceEdit(Strict):

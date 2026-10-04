@@ -15,6 +15,16 @@ KERF_COMMIT = "7ff449c9cf6ecf409d4faba209119646440b92f2"
 LENGTH_MM = {"mm": 1., "cm": 10., "m": 1000., "in": 25.4, "ft": 304.8}
 
 
+def _conversion_equal(a: float, b: float, scale: float) -> bool:
+    """Allow only a few floating-point rounding steps during unit conversion.
+
+    This is deliberately not a geometric tolerance, and direct mm/deg/count
+    inputs retain exact comparisons against the approved bounds.
+    """
+    return (scale != 1. and math.isfinite(a) and math.isfinite(b) and
+            abs(a - b) <= 4 * max(math.ulp(a), math.ulp(b)))
+
+
 def normalize_spec(data: dict, requirements: Requirements) -> dict:
     """Normalize independent values; approved bounds remain authoritative.
 
@@ -51,7 +61,11 @@ def normalize_spec(data: dict, requirements: Requirements) -> dict:
         if approved.unit != normalized_unit or (unit == "count" and approved.kind != "integer"):
             raise CadLoopError("KERF_UNIT_MISMATCH", "Kerf units must match the approved parameter kind and unit", parameter=parameter.name)
         value = parameter.value * scale
-        approved.validate_value(value)
+        if value < approved.minimum and _conversion_equal(value, approved.minimum, scale):
+            value = approved.minimum
+        elif value > approved.maximum and _conversion_equal(value, approved.maximum, scale):
+            value = approved.maximum
+        value = approved.validate_value(value)
         constraints = parameter.constraints
         if constraints:
             if constraints.expression is not None:
@@ -59,12 +73,13 @@ def normalize_spec(data: dict, requirements: Requirements) -> dict:
             for bound in (constraints.min, constraints.max):
                 if bound is not None and not math.isfinite(bound * scale):
                     raise CadLoopError("KERF_NONFINITE_BOUND", "Constraint bounds must be finite")
-            if ((constraints.min is not None and approved.minimum < constraints.min * scale) or
-                    (constraints.max is not None and approved.maximum > constraints.max * scale)):
+            if ((constraints.min is not None and approved.minimum < constraints.min * scale and
+                 not _conversion_equal(approved.minimum, constraints.min * scale, scale)) or
+                    (constraints.max is not None and approved.maximum > constraints.max * scale and
+                     not _conversion_equal(approved.maximum, constraints.max * scale, scale))):
                 raise CadLoopError("KERF_BOUND_MISMATCH", "Approved bounds must preserve all Kerf bounds; review conflicting inputs in a new specification", parameter=parameter.name)
-        values[parameter.name] = int(value) if approved.kind == "integer" else value
-    requirements.validate_parameters(values)
-    return values
+        values[parameter.name] = value
+    return requirements.validate_parameters(values)
 
 
 def import_project(root: str | Path, *, spec: str | Path, code: str | Path,
