@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from cadloop.contracts import Param, Requirements
+from cadloop.errors import CadLoopError
 from .contracts import DesignContract, ParameterSpec, VerificationIntent
 from .diagrams import parameter_label
 
@@ -13,6 +14,19 @@ SECTIONS = (
     "PARAMETERS THAT MUST REMAIN EDITABLE", "PROTECTED REQUIREMENTS", "VERIFICATION INTENT",
     "APPROVED ASSUMPTIONS", "PROHIBITED INTERPRETATIONS",
 )
+
+
+def validate_materialization_support(handoff: dict) -> None:
+    """Recheck immutable intent, including imports created by an older adapter."""
+    current_adapter = compile_requirements(DesignContract.model_validate(handoff["contract"]))
+    unsupported = list({(item["code"], item["id"]): item
+                        for item in [*handoff["requirements_adapter"]["unsupported"],
+                                     *current_adapter["unsupported"]]
+                        if item["critical"]}.values())
+    if unsupported:
+        raise CadLoopError("PLANNING_VERIFICATION_UNSUPPORTED",
+                           "Resolve unsupported mandatory planning intent before materialization or further CAD work",
+                           unsupported=unsupported)
 
 
 def _refs(items: list[str]) -> str:

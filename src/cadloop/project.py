@@ -109,7 +109,8 @@ class Project:
                         state["contract_hash"] != binding["design_contract_hash"]):
                     raise CadLoopError("PLANNING_STALE", "CAD belongs to a previous design contract; review and materialize new intent separately",
                                        authored_against=binding, current_planning_revision=state["revision"])
-                workspace.handoff()
+                from .planning.handoff import validate_materialization_support
+                validate_materialization_support(workspace.handoff())
         return binding
 
     def revision(self):

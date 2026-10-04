@@ -312,3 +312,51 @@ def test_old_frozen_adapter_cannot_bypass_current_mandatory_guards(
                for item in exc.value.details['unsupported'])
     assert tree_hashes(workspace.root) == before
     assert workspace.handoff()['requirements_adapter'] == saved
+
+
+@pytest.mark.parametrize('case', ['one_sided', 'mandatory_geometry'])
+@pytest.mark.parametrize('operation', ['propose', 'evaluate', 'finish'])
+def test_previously_materialized_unsupported_plan_blocks_further_cad_work(
+        tmp_path, monkeypatch, case, operation):
+    import cadloop.planning.handoff as handoff_module
+    current_compile = handoff_module.compile_requirements
+    def previous_compile(contract):
+        adapter = current_compile(contract)
+        if case == 'one_sided':
+            adapter['unsupported'] = [item for item in adapter['unsupported'] if item['id'] != 'wall']
+        else:
+            for item in adapter['unsupported']:
+                if item['id'] == 'required_bore':
+                    item['critical'] = False
+        return adapter
+    def add_unsupported(contract):
+        if case == 'one_sided':
+            contract['parameters'].append({
+                'id': 'wall', 'name': 'Wall thickness', 'kind': 'number',
+                'mode': 'BOUNDED', 'unit': 'mm', 'minimum': 3.0,
+                'impact': 'LOW', 'source_refs': ['src_user_1'],
+            })
+        else:
+            contract['verification_intent'].append({
+                'id': 'required_bore', 'text': 'Verify the mandatory bore',
+                'kind': 'manual', 'geometry_required': True, 'component_refs': ['plate'],
+            })
+    with monkeypatch.context() as legacy:
+        legacy.setattr(handoff_module, 'compile_requirements', previous_compile)
+        workspace, state, design = frozen_plate(tmp_path, change=add_unsupported)
+        workspace.materialize(base=state['revision'], design_dir=design)
+    project = Project(workspace.root)
+    revision = project.revision()
+    before = tree_hashes(workspace.root)
+    with pytest.raises(CadLoopError) as exc:
+        if operation == 'propose':
+            project.propose({'base_revision': revision, 'parameters': {'width': 42.0},
+                             'reason': 'Cannot repair geometry while upstream mandatory intent is unsupported'})
+        else:
+            getattr(project, operation)(mode='trusted-native')
+    assert exc.value.code == 'PLANNING_VERIFICATION_UNSUPPORTED'
+    assert any(item['id'] == ('wall' if case == 'one_sided' else 'required_bore')
+               for item in exc.value.details['unsupported'])
+    assert tree_hashes(workspace.root) == before
+    assert workspace.handoff()['design_contract_revision'] == state['revision']
+    assert not (project.control / 'runs').exists()

@@ -544,14 +544,8 @@ class PlanningProject:
             # A valid old freeze may contain adapter output from before a
             # fail-closed bug fix. Recheck its immutable contract with today's
             # compiler without rewriting the reviewed artifacts or their hashes.
-            from .handoff import compile_requirements
-            current_adapter = compile_requirements(DesignContract.model_validate(handoff["contract"]))
-            unsupported = list({(item["code"], item["id"]): item
-                                for item in [*adapter["unsupported"], *current_adapter["unsupported"]]
-                                if item["critical"]}.values())
-            if unsupported:
-                raise CadLoopError("PLANNING_VERIFICATION_UNSUPPORTED", "Resolve unsupported mandatory planning intent before materialization",
-                                   unsupported=unsupported)
+            from .handoff import validate_materialization_support
+            validate_materialization_support(handoff)
             compiled = adapter["requirements"]
             if compiled is None:
                 raise CadLoopError("PLANNING_VERIFICATION_MISSING", "Provide explicit supported geometric verification intent")

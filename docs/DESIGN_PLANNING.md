@@ -246,7 +246,12 @@ materialization.
 Before import, the controller also checks an older frozen contract with the
 current adapter rules. Previously omitted bounds or mandatory checks cannot
 bypass a fail-closed fix through cached adapter output. The original freeze,
-rendered review and artifact hashes remain unchanged.
+rendered review and artifact hashes remain unchanged. Already-materialized
+planned CAD is checked by the same guard before proposal, evaluation or finish.
+If an older adapter omitted mandatory intent, further CAD work is blocked until
+that intent is reviewed and materialized in a new workspace; old artifacts are
+not rewritten or relabeled as verified. Ordinary projects without a planning
+binding keep their existing flow.
 The import has a recovery journal and writes the existing project anchor last as
 its commit marker. An interrupted import is recovered under the shared controller
 lock; only unchanged, hash-matching partial files owned by that import may be
