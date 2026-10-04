@@ -68,12 +68,13 @@ class Project:
             raise CadLoopError("DESIGN_UNSUPPORTED", "v0 design imports contain Python modules and parameters.json only")
         if sum((source / name).stat().st_size for name in hashes) > 500_000:
             raise CadLoopError("SOURCE_TOO_LARGE", "Source exceeds the v0 budget")
-        req.validate_parameters(read_json(source / "parameters.json"))
+        parameters = req.validate_parameters(read_json(source / "parameters.json"))
         for name in hashes:
             if name.endswith(".py"):
                 ast.parse((source / name).read_text(), filename=name)
         root.mkdir(parents=True, exist_ok=True)
         shutil.copytree(source, root / "design", ignore=shutil.ignore_patterns("__pycache__"))
+        write_json(root / "design" / "parameters.json", parameters)
         write_json(root / "requirements.json", data)
         (root / ".cadloop").mkdir()
         write_json(root / ".cadloop" / "anchor.json",
@@ -119,9 +120,15 @@ class Project:
             if revision != proposal.base_revision:
                 raise CadLoopError("STALE_REVISION", "Proposal was based on a different design revision", current_revision=revision)
             old = self.parameters()
-            new = {**old, **proposal.parameters}
-            self.requirements().validate_parameters(new)
-            if not proposal.edits and new == old:
+            requirements = self.requirements()
+            new = requirements.validate_parameters({**old, **proposal.parameters})
+            # Integral floats and ints compare equal in Python, but only an int
+            # is usable by range/index operations in authoring code. Preserve
+            # type-only repairs of parameters stored by older controllers.
+            parameters_changed = new != old or any(
+                spec.kind == "integer" and type(old[name]) is not int
+                for name, spec in requirements.parameters.items())
+            if not proposal.edits and not parameters_changed:
                 raise CadLoopError("NO_CHANGE", "The proposal does not change the design")
             self.snapshot(revision)
             staging = Path(tempfile.mkdtemp(prefix="proposal-", dir=self.control))
@@ -129,7 +136,7 @@ class Project:
             backup = staging / "backup"
             try:
                 shutil.copytree(self.design, staged, ignore=shutil.ignore_patterns("__pycache__"))
-                if new != old:
+                if parameters_changed:
                     write_json(staged / "parameters.json", new)
                 for edit in proposal.edits:
                     if not edit.path.endswith(".py") or len(Path(edit.path).parts) > 3:
@@ -227,7 +234,7 @@ class Project:
         from .checks import result
         if mode not in ("trusted-native", "docker"):
             raise CadLoopError("EXECUTION_MODE_REQUIRED", "Explicitly select trusted-native or Docker execution")
-        if not 0 < timeout <= 300:
+        if type(timeout) not in (int, float) or not 0 < timeout <= 300:
             raise CadLoopError("INVALID_TIMEOUT", "Worker timeout must be in (0, 300] seconds")
         with project_lock(self.control):
             revision = self.revision()

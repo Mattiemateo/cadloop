@@ -45,6 +45,10 @@ An existing managed session is not resumed automatically. Archive `.cadloop/sess
 and, only after reconciling any outstanding charges, its budget ledger before a new
 session. This avoids silent duplicate inference after an interruption. It is not a
 complete resumable-job implementation.
+Invalid execution options are rejected before creating a session. Once started,
+initial evaluation errors and handled interruptions are recorded as terminal
+states instead of leaving a misleading `RUNNING` marker. A hard process kill
+cannot guarantee finalization.
 
 ## What the delivered tests establish
 

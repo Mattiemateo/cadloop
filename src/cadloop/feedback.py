@@ -39,7 +39,24 @@ def progress_key(report):
         for defect in ev.get('defects',[]):
             if 'obstruction_mm3' in defect:
                 amount(defect['obstruction_mm3'],defect.get('allowed_numerical_mm3',0))
-    return [fatal,len(blockers),round(sum(penalties),9)]
+    # A required scenario is represented by one summary check above. Its measured
+    # failures live in the scenario's compact report, not in that summary's
+    # evidence. Include them so improving a response is not mistaken for a stall.
+    blocker_count = len(blockers)
+    blocker_ids = {c['id'] for c in blockers}
+    for scenario in report.get('parametric_tests', []):
+        if 'AUTO_parametric_' + scenario['id'] not in blocker_ids:
+            continue
+        key = scenario.get('progress_key')
+        if (not isinstance(key, (list, tuple)) or len(key) != 3 or
+                any(type(v) not in (int, float) or not math.isfinite(v) or v < 0 for v in key)):
+            continue
+        fatal += key[0]
+        # Replace the grouping check with its actual child blockers; retain one
+        # blocker for an incomplete/invalid child summary. Acceptance is separate.
+        blocker_count += max(1, key[1]) - 1
+        penalties.append(key[2])
+    return [fatal,blocker_count,round(sum(penalties),9)]
 
 
 def compact(report, *, detail_limit=8):

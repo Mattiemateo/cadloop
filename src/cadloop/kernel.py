@@ -19,8 +19,8 @@ from OCP.Bnd import Bnd_Box
 from OCP.BRepBndLib import BRepBndLib
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Common, BRepAlgoAPI_Cut
 from OCP.BRepExtrema import BRepExtrema_DistShapeShape
-from OCP.BRepAdaptor import BRepAdaptor_Surface
-from OCP.GeomAbs import GeomAbs_Cylinder, GeomAbs_Plane
+from OCP.BRepAdaptor import BRepAdaptor_Surface, BRepAdaptor_Curve
+from OCP.GeomAbs import GeomAbs_Cylinder, GeomAbs_Plane, GeomAbs_Circle
 from OCP.gp import gp_Pnt, gp_Vec, gp_Trsf, gp_Ax2, gp_Dir
 from OCP.BRepPrimAPI import BRepPrimAPI_MakeCylinder
 from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
@@ -238,6 +238,58 @@ def bore_obstruction(shape, cylinder: dict, z_min: float, z_max: float,
             "method": "continuous_inset_cylinder_BREP_common"}
 
 
+def bore_openings(shape, cylinder: dict, tolerance: float) -> dict:
+    """Require complete local rims opening onto outward-facing axial planes.
+
+    A remote boss can extend the part bounds beyond a legitimate through bore.
+    Inspect the bore's own boundary instead: its lower rim must adjoin a -Z
+    exterior face and its upper rim a +Z exterior face. Blind bottoms have the
+    opposite orientation, and countersinks/partial rims are not supported.
+    Interior obstruction remains a separate full-part-height volume query.
+    """
+    faces = [TopoDS.Face_s(face) for face in explore(shape, TopAbs_FACE)]
+    wall = faces[cylinder["face_index"]]
+    planar_support = []
+    for face in faces:
+        surface = BRepAdaptor_Surface(face, True)
+        if surface.GetType() != GeomAbs_Plane:
+            continue
+        normal = xyz(surface.Plane().Axis().Direction())
+        if face.Orientation() == TopAbs_REVERSED:
+            normal = [-value for value in normal]
+        if abs(abs(normal[2]) - 1) <= 1e-8:
+            planar_support.append((normal[2], list(explore(face, TopAbs_EDGE))))
+
+    rims = []
+    height = cylinder["bounds_mm"]["max"][2] - cylinder["bounds_mm"]["min"][2]
+    z_tolerance = min(tolerance, height / 4)
+    for side, direction in (("min", -1), ("max", 1)):
+        z = cylinder["bounds_mm"][side][2]
+        angle, supported = 0., True
+        for raw in explore(wall, TopAbs_EDGE):
+            edge_bounds = bounds(raw)
+            if any(abs(edge_bounds[end][2] - z) > z_tolerance for end in ("min", "max")):
+                continue
+            curve = BRepAdaptor_Curve(TopoDS.Edge_s(raw))
+            if curve.GetType() != GeomAbs_Circle:
+                continue
+            circle = curve.Circle()
+            if (abs(circle.Radius() - cylinder["radius_mm"]) > tolerance or
+                    abs(abs(circle.Axis().Direction().Z()) - 1) > 1e-8):
+                supported = False
+                continue
+            angle += abs(curve.LastParameter() - curve.FirstParameter())
+            if not any(normal * direction > 1 - 1e-8 and
+                       any(raw.IsSame(edge) for edge in edges)
+                       for normal, edges in planar_support):
+                supported = False
+        rims.append({"side": side, "z_mm": z, "rim_angle_rad": angle,
+                     "outward_planar_support": supported,
+                     "open": supported and abs(angle - 2 * math.pi) <= 1e-6})
+    return {"through": all(rim["open"] for rim in rims), "rims": rims,
+            "method": "complete_local_circular_rims_and_outward_axial_faces"}
+
+
 def holes_z(shape, epsilon=0.001) -> list[dict]:
     result = []
     for c in cylinders(shape):
@@ -249,11 +301,23 @@ def holes_z(shape, epsilon=0.001) -> list[dict]:
     return result
 
 
+def cylinder_axis_xy(cylinder: dict, z: float) -> list[float]:
+    """Evaluate a supported near-Z cylinder axis at a physical Z datum."""
+    origin, axis = cylinder["axis_origin_mm"], cylinder["axis"]
+    return [origin[i] + (z - origin[2]) * axis[i] / axis[2] for i in (0, 1)]
+
+
 def cylinder_ref(shape, ref, *, observed=None):
-    matches = [c for c in (holes_z(shape) if observed is None else observed) if
-               abs(c["radius_mm"]-ref.radius) <= ref.tolerance and
-               (ref.center_xy is None or math.hypot(c["axis_origin_mm"][0]-ref.center_xy[0],
-                          c["axis_origin_mm"][1]-ref.center_xy[1]) <= ref.tolerance)]
+    matches = []
+    for cylinder in (holes_z(shape) if observed is None else observed):
+        # Surface parameter origins may lie arbitrarily far from the part.
+        # Resolve a center selector at the finite face's mid-Z plane instead.
+        z = (cylinder["bounds_mm"]["min"][2] + cylinder["bounds_mm"]["max"][2]) / 2
+        center = cylinder_axis_xy(cylinder, z)
+        if (abs(cylinder["radius_mm"] - ref.radius) <= ref.tolerance and
+                (ref.center_xy is None or math.hypot(center[0] - ref.center_xy[0],
+                                                    center[1] - ref.center_xy[1]) <= ref.tolerance)):
+            matches.append({**cylinder, "reference_center_xy_mm": center, "reference_z_mm": z})
     if len(matches) != 1:
         raise CadLoopError("REF_MISSING" if not matches else "REF_AMBIGUOUS",
                            "Cylinder reference must match exactly one analytic inner face",
