@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 from graphlib import CycleError, TopologicalSorter
+import json
 import re
 from typing import Annotated, Literal
 
-from pydantic import Field, StrictBool, StrictFloat, StrictInt, StrictStr, field_validator, model_validator
+from pydantic import Field, StrictBool, StrictFloat, StrictInt, StrictStr, field_validator, model_serializer, model_validator
 
 from cadloop.contracts import NAME, Strict
 
@@ -274,9 +275,56 @@ class DiagramPrimitive(Strict):
         return self
 
 
+class DiagramVariantSet(Strict):
+    """An authored geometry layer for each supported value of an enum parameter."""
+    id: Identifier
+    parameter_ref: Identifier
+    cases: dict[StrictStr, dict[ViewName, list[DiagramPrimitive]]] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def complete_geometric_cases(self):
+        signatures = set()
+        for views in self.cases.values():
+            if set(views) != {"front", "side", "top"} or any(not items for items in views.values()):
+                raise ValueError("Diagram variant cases require nonempty front, side and top views")
+            # Labels, IDs and canonical annotations cannot disguise identical geometry.
+            geometry_fields = {
+                "rectangle": ("width", "height"), "component_envelope": ("width", "height"),
+                "keepout": ("width", "height"), "circle": ("radius",),
+                "line": ("x2", "y2"), "axis": ("x2", "y2"), "arrow": ("x2", "y2"),
+                "motion_arc": ("radius", "start_angle_deg", "end_angle_deg"),
+            }
+            signature = tuple((view, tuple(sorted(
+                json.dumps([primitive.type, primitive.x, primitive.y] +
+                           [getattr(primitive, field) for field in geometry_fields[primitive.type]])
+                for primitive in views[view] if primitive.type in geometry_fields
+            ))) for view in ("front", "side", "top"))
+            if not any(items for _, items in signature):
+                raise ValueError("Diagram variants must contain geometry, not only labels or dimensions")
+            if signature in signatures:
+                raise ValueError("Diagram variant cases must have distinct geometry, not only changed labels")
+            signatures.add(signature)
+        return self
+
+
 class DiagramSpec(Strict):
     layout_units: Literal["normalized"] = "normalized"
     views: dict[ViewName, list[DiagramPrimitive]] = Field(default_factory=dict)
+    variant_sets: list[DiagramVariantSet] = Field(default_factory=list)
+
+    @model_serializer(mode="wrap")
+    def preserve_static_contracts(self, handler):
+        data = handler(self)
+        # Preserve existing static contracts and their immutable artifact hashes.
+        if not self.variant_sets:
+            data.pop("variant_sets", None)
+        return data
+
+    def all_primitives(self):
+        yield from (primitive for view in self.views.values() for primitive in view)
+        for variants in self.variant_sets:
+            yield from (primitive for views in variants.cases.values()
+                        for view in views.values() for primitive in view)
 
 
 MUTABLE_FIELDS = {
@@ -332,7 +380,8 @@ class DesignContract(Strict):
                        "coordinate_frames", "verification_intent")
         known = {name: {item.id for item in getattr(self, name)} for name in collections}
         all_ids = [item.id for name in collections for item in getattr(self, name)]
-        all_ids.extend(p.id for view in self.diagram_spec.views.values() for p in view)
+        all_ids.extend(p.id for p in self.diagram_spec.all_primitives())
+        all_ids.extend(variants.id for variants in self.diagram_spec.variant_sets)
         if len(all_ids) != len(set(all_ids)):
             raise ValueError("Planning IDs must be globally unique")
 
@@ -377,12 +426,22 @@ class DesignContract(Strict):
             for hole in intent.hole_refs:
                 for parameter in (hole.x_parameter, hole.y_parameter, hole.radius_parameter):
                     refs([parameter], "parameters", f"verification hole on {intent.id}")
-        for view in self.diagram_spec.views.values():
-            for primitive in view:
-                for field, category in (("parameter_ref", "parameters"), ("component_ref", "components"), ("requirement_ref", "requirements")):
-                    value = getattr(primitive, field)
-                    if value is not None and value not in known[category]:
-                        raise ValueError(f"Unresolved diagram {field}")
+        parameters = {parameter.id: parameter for parameter in self.parameters}
+        bound_parameters = set()
+        for variants in self.diagram_spec.variant_sets:
+            parameter = parameters.get(variants.parameter_ref)
+            if parameter is None or parameter.kind != "enum":
+                raise ValueError("Diagram variants require a known enum parameter")
+            if parameter.id in bound_parameters:
+                raise ValueError("Duplicate diagram variant parameter binding")
+            bound_parameters.add(parameter.id)
+            if not set(variants.cases) <= set(parameter.enum_values):
+                raise ValueError("Diagram variant case is not a declared enum choice")
+        for primitive in self.diagram_spec.all_primitives():
+            for field, category in (("parameter_ref", "parameters"), ("component_ref", "components"), ("requirement_ref", "requirements")):
+                value = getattr(primitive, field)
+                if value is not None and value not in known[category]:
+                    raise ValueError(f"Unresolved diagram {field}")
         for candidate in self.decision_candidates:
             if len(candidate.affects) != len(set(candidate.affects)) or not set(candidate.affects) <= set(all_ids):
                 raise ValueError("Duplicate or unresolved decision affects")

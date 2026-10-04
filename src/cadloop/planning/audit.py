@@ -123,20 +123,20 @@ def audit(contract: DesignContract | dict, accepted_history=None) -> dict:
     ):
         if absent:
             warnings.append({"code": code, "id": identifier, "message": message})
-    views = contract.diagram_spec.model_dump(mode="json").get("views", {})
-    view_names = set(views) if isinstance(views, dict) else {v.get("view", v.get("name")) for v in views}
-    if view_names != {"front", "side", "top"} or any(not view for view in views.values()):
+    from .diagrams import diagram_views
+    views, diagram_issues = diagram_views(contract)
+    blocking.extend(diagram_issues)
+    if any(not view for view in views.values()):
         issue("DIAGRAM_VIEWS_MISSING", "diagram_spec", "Provide front, side and top concept views.")
-    for view in contract.diagram_spec.views.values():
-        for primitive in view:
-            if (primitive.text and (primitive.type == "dimension" or
-                    re.search(r"(?<![\w.])[-+]?\d+(?:\.\d+)?\s*(?:mm|deg|count|in)\b|\d\s*°", primitive.text))
-                    and primitive.parameter_ref is None):
-                issue("DIAGRAM_LITERAL_ENGINEERING_VALUE", primitive.id,
-                      "Engineering diagram values must reference canonical parameters.")
-            if primitive.type == "dimension" and primitive.text:
-                issue("DIAGRAM_DIMENSION_TEXT_OVERRIDE", primitive.id,
-                      "Dimension labels are generated from canonical parameter references.")
+    for primitive in contract.diagram_spec.all_primitives():
+        if (primitive.text and (primitive.type == "dimension" or
+                re.search(r"(?<![\w.])[-+]?\d+(?:\.\d+)?\s*(?:mm|deg|count|in)\b|\d\s*°", primitive.text))
+                and primitive.parameter_ref is None):
+            issue("DIAGRAM_LITERAL_ENGINEERING_VALUE", primitive.id,
+                  "Engineering diagram values must reference canonical parameters.")
+        if primitive.type == "dimension" and primitive.text:
+            issue("DIAGRAM_DIMENSION_TEXT_OVERRIDE", primitive.id,
+                  "Dimension labels are generated from canonical parameter references.")
 
     approved = approved_sources(contract)
     critical = critical_claim_ids(contract)

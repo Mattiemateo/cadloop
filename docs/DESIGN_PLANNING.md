@@ -157,6 +157,9 @@ Array indexes, arbitrary paths, Python and execution payloads are unsupported.
 Answering multiple active questions commits one revision; stale/unknown questions,
 invalid options, duplicate answers and conflicting update paths reject the entire
 batch. Accepted choices cannot be silently undone by a later agent proposal.
+This protection includes the selected parameter's kind, units, mode, bounds,
+enum choices and derivation/objective semantics, not just the selected scalar.
+Changing those semantics requires a new explicit decision or reopening the plan.
 
 ## Concept sketches and freeze
 
@@ -167,6 +170,22 @@ and component envelopes. Engineering annotations reference canonical parameter,
 component or requirement IDs. No independent dimension text, arbitrary SVG/XML,
 remote resources or scripts are accepted. Text is escaped; invalid XML characters
 are rejected. The same contract produces byte-identical SVGs.
+
+Geometric enum choices use `diagram_spec.variant_sets`: each set declares an
+`id`, a canonical enum `parameter_ref`, and `cases` mapping supported enum values
+to complete front/side/top primitive layers. The renderer adds the selected layer
+to the shared `views`; `design-answer` selects it through the parameter update,
+without parsing the option's label or description. Case IDs and references are
+validated even in unselected layers. Each case must contain actual geometry and
+different cases cannot differ only in labels, dimensions or ignored fields.
+
+An unresolved binding displays an incomplete-geometry notice and blocks freeze.
+A selected value without an authored case blocks both rendering and freeze;
+there is no silent fallback to another option. Static diagrams remain supported
+with byte-compatible serialization. Only explicitly bound enum geometry is
+dynamic: ordinary labels and numeric dimensions do not generate or scale CAD.
+The author must supply reviewed layers for each supported geometric alternative.
+These normalized sketches do not establish dimensions, fit or manufacturability.
 
 After any proposal or answer, old sketches remain with their old revision and do
 not count as current review. Render the new revision and show it to the user.
@@ -209,12 +228,30 @@ from nominal fastener sizes. Existing boolean parameter schemas cannot enforce a
 fixed truth value; such enforcement remains explicitly unsupported rather than
 being silently exposed as an unrestricted boolean.
 
+The existing numeric parameter schema also requires both finite bounds. A
+one-sided `BOUNDED` planning parameter remains in the handoff but blocks
+materialization until a reviewed planning revision supplies the other bound.
+The adapter never drops the approved limit or invents the missing one. This
+restriction applies even when the parameter's impact is below `CRITICAL`.
+
 `design-materialize` imports reviewed CAD source into the same frozen workspace,
 then uses ordinary `Project` build/repair/finish operations. Mandatory unsupported
 geometric intent blocks materialization. Supplying `--requirements` cannot bypass
 that blocker. Optional reviewed requirements may add checks but must preserve all
-compiled targets, approved bounds and engineering blockers. Resolve unsupported
-mandatory intent through reviewed planning revisions before materialization.
+compiled targets, approved bounds and engineering blockers. Every unsupported
+intent marked `geometry_required: true` is mandatory, regardless of its linked
+requirement's impact or whether requirement references were supplied. Resolve
+unsupported mandatory intent through reviewed planning revisions before
+materialization.
+Before import, the controller also checks an older frozen contract with the
+current adapter rules. Previously omitted bounds or mandatory checks cannot
+bypass a fail-closed fix through cached adapter output. The original freeze,
+rendered review and artifact hashes remain unchanged. Already-materialized
+planned CAD is checked by the same guard before proposal, evaluation or finish.
+If an older adapter omitted mandatory intent, further CAD work is blocked until
+that intent is reviewed and materialized in a new workspace; old artifacts are
+not rewritten or relabeled as verified. Ordinary projects without a planning
+binding keep their existing flow.
 The import has a recovery journal and writes the existing project anchor last as
 its commit marker. An interrupted import is recovered under the shared controller
 lock; only unchanged, hash-matching partial files owned by that import may be

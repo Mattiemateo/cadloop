@@ -323,6 +323,27 @@ class PlanningProject:
                 _, target, field = update_target(proposed, update.path)
                 if getattr(target, field) != update.value:
                     raise CadLoopError("PLANNING_PROTECTED_STATE", "A proposal cannot undo a user-selected update")
+            # A selected value retains its meaning and enforcement, not merely
+            # its JSON scalar. Otherwise FIXED=3 could silently become FREE=3,
+            # or millimeters could become degrees while the recorded answer
+            # still appeared unchanged. Explicit answers may revise these
+            # semantics; an agent-authored hypothesis may not.
+            selected_parameters = set()
+            for path in final_updates:
+                collection, identifier, field = path.split("/")[1:]
+                if collection == "parameters" and field in ("value", "minimum", "maximum", "mode", "objective"):
+                    selected_parameters.add(identifier)
+            previous_parameters = {parameter.id: parameter for parameter in current.parameters}
+            proposed_parameters = {parameter.id: parameter for parameter in proposed.parameters}
+            protected_fields = ("kind", "unit", "mode", "minimum", "maximum", "enum_values",
+                                "derived_from", "objective")
+            for identifier in selected_parameters:
+                old, new = previous_parameters[identifier], proposed_parameters[identifier]
+                changed_fields = [field for field in protected_fields if getattr(old, field) != getattr(new, field)]
+                if changed_fields:
+                    raise CadLoopError("PLANNING_PROTECTED_STATE",
+                                       "A proposal cannot change a user-selected parameter's meaning or enforcement; use an explicit user decision",
+                                       parameter=identifier, fields=changed_fields)
             data = proposed.model_dump()
             data["status"] = self._audit(proposed, previous["sequence"])["status"]
             candidate = DesignContract.model_validate(data)
@@ -520,10 +541,11 @@ class PlanningProject:
             if (self.control / "anchor.json").exists():
                 raise CadLoopError("PLANNING_ALREADY_MATERIALIZED", "Never rebind existing CAD; create a new workspace for changed intent")
             adapter = handoff["requirements_adapter"]
-            unsupported = [item for item in adapter["unsupported"] if item["critical"]]
-            if unsupported:
-                raise CadLoopError("PLANNING_VERIFICATION_UNSUPPORTED", "Resolve unsupported mandatory geometric intent before materialization",
-                                   unsupported=unsupported)
+            # A valid old freeze may contain adapter output from before a
+            # fail-closed bug fix. Recheck its immutable contract with today's
+            # compiler without rewriting the reviewed artifacts or their hashes.
+            from .handoff import validate_materialization_support
+            validate_materialization_support(handoff)
             compiled = adapter["requirements"]
             if compiled is None:
                 raise CadLoopError("PLANNING_VERIFICATION_MISSING", "Provide explicit supported geometric verification intent")

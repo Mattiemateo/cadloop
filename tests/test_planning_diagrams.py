@@ -90,6 +90,7 @@ def test_render_revision_is_explicit_and_absent_views_are_not_invented():
     data = contract().model_dump()
     data["revision"] = "new_revision"
     data["diagram_spec"]["views"] = {}
+    data["diagram_spec"]["variant_sets"] = []
     result = render_svgs(DesignContract.model_validate(data))
     assert len(result) == 3
     assert all("planning revision new_revision" in svg for svg in result.values())
