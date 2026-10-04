@@ -114,9 +114,9 @@ def check_one(check, parts, req, *, queries=None):
             i = ids[0]
             remaining.remove(i)
             obs = observed[i]
-            through = (abs(obs["bounds_mm"]["min"][2]-b["min"][2]) <= check.tolerance and
-                       abs(obs["bounds_mm"]["max"][2]-b["max"][2]) <= check.tolerance)
-            match = {"expected": target, "through": through}
+            openings = k.bore_openings(shape, obs, check.tolerance)
+            through = openings["through"]
+            match = {"expected": target, "through": through, "opening_check": openings}
             matches.append(match)
             if not through:
                 defects.append({"expected": target, "reason": "BLIND_OR_PARTIAL_HOLE"})
@@ -139,12 +139,22 @@ def check_one(check, parts, req, *, queries=None):
     elif check.kind == "coaxial":
         a, b = ref(check.a), ref(check.b)
         angle = math.degrees(math.acos(min(1., max(0., abs(k.dot(a["axis"], b["axis"]))))))
-        offset = k.norm(k.cross(k.sub(a["axis_origin_mm"], b["axis_origin_mm"]), a["axis"]))
+        # Supported axes are near world Z. Measure the largest XY separation at
+        # the ends of their combined physical face span. Separation is the norm
+        # of an affine function of Z, so its maximum occurs at an endpoint.
+        # Unlike a raw surface-origin distance, this definition is symmetric and
+        # invariant to moving either parameter origin along its cylinder axis.
+        z_span = [min(c["bounds_mm"]["min"][2] for c in (a, b)),
+                  max(c["bounds_mm"]["max"][2] for c in (a, b))]
+        offsets = [k.norm(k.sub(k.cylinder_axis_xy(a, z), k.cylinder_axis_xy(b, z))) for z in z_span]
+        offset = max(offsets)
         statuses = [interval(offset, None, check.max_offset, eps),
                     interval(angle, None, check.max_angle_deg, 1e-7)]
         status = "fail" if "fail" in statuses else "indeterminate" if "indeterminate" in statuses else "pass"
         ev = {"offset_mm": offset, "angle_deg": angle, "max_offset_mm": check.max_offset,
               "max_angle_deg": check.max_angle_deg, "axis_a": a, "axis_b": b,
+              "offset_definition": "maximum_XY_axis_separation_over_combined_face_Z_span",
+              "z_span_mm": z_span, "endpoint_offsets_mm": offsets,
               "method": "analytic_axes_from_imported_cylindrical_faces"}
         code = "AXES_MISALIGNED"
     elif check.kind == "plane_contact":

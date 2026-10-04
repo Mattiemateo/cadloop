@@ -133,6 +133,22 @@ An experimental, text-only Chat Completions-compatible adapter is included. Its 
 
 One nonempty valid solid per part, expected inventory, no extra free topology, axis-aligned dimensions, complete unsplit analytic Z-axis bores, through-depth, and a continuous inset bore-obstruction probe, actual cylindrical-axis alignment, BREP minimum distance with closest points, all-pairs Boolean overlap, named planar contact area, and BREP/STEP export consistency. Missing/failed/unsupported measurements block acceptance.
 
+Through-hole checks use complete local circular rims adjoining outward-facing
+axial planar faces, plus a clear lumen across the full part height. A remote
+boss does not make a locally open hole blind; countersinks, partial openings,
+and arbitrary tilted bores remain outside this supported check. The lumen
+check does not certify continuous bearing-wall support around a side pocket.
+
+For supported near-Z cylinder references, coaxial `max_offset` is the maximum
+XY distance between the two axes over the combined Z span of their actual
+cylindrical faces, measured at both span endpoints. It is symmetric and does
+not depend on where either cylinder's mathematical axis origin was placed.
+The separate `max_angle_deg` limit still applies. This is a nominal alignment
+check, not dynamic shaft clearance or fit certification.
+An optional cylinder-reference `center_xy` selects the axis position at the
+midpoint of that cylindrical face's Z span, not its arbitrary surface origin.
+The selected physical datum is included in the reference evidence.
+
 Checks, approved bounds and requirements are outside the agent's patch interface. Receipt checks detect stale or modified artifacts within this workflow. **Hashes and separate processes are not a hostile-code security boundary**; read `docs/SECURITY.md`.
 
 ## What is not included
