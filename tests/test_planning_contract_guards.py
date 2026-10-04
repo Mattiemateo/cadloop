@@ -264,3 +264,51 @@ def test_new_explicit_decision_can_legitimately_supersede_selected_mode_and_valu
     preserved = workspace.propose({"base_revision": context["revision"], "reason": "Clarify approved intent",
                                    "contract": context["contract"]})
     assert preserved["status"] == "REVIEWABLE"
+
+
+@pytest.mark.parametrize('case', ['one_sided', 'mandatory_geometry'])
+@pytest.mark.parametrize('supplied_requirements', [False, True])
+def test_old_frozen_adapter_cannot_bypass_current_mandatory_guards(
+        tmp_path, monkeypatch, case, supplied_requirements):
+    import cadloop.planning.handoff as handoff_module
+    current_compile = handoff_module.compile_requirements
+    def previous_compile(contract):
+        # Emulate the earlier compiler during the real freeze transaction;
+        # immutable manifests and receipts are produced by the controller.
+        adapter = current_compile(contract)
+        if case == 'one_sided':
+            adapter['unsupported'] = [item for item in adapter['unsupported'] if item['id'] != 'wall']
+        else:
+            for item in adapter['unsupported']:
+                if item['id'] == 'required_bore':
+                    item['critical'] = False
+        return adapter
+    def add_unsupported(contract):
+        if case == 'one_sided':
+            contract['parameters'].append({
+                'id': 'wall', 'name': 'Wall thickness', 'kind': 'number',
+                'mode': 'BOUNDED', 'unit': 'mm', 'minimum': 3.0,
+                'impact': 'LOW', 'source_refs': ['src_user_1'],
+            })
+        else:
+            contract['verification_intent'].append({
+                'id': 'required_bore', 'text': 'Verify the mandatory bore',
+                'kind': 'manual', 'geometry_required': True, 'component_refs': ['plate'],
+            })
+    with monkeypatch.context() as legacy:
+        legacy.setattr(handoff_module, 'compile_requirements', previous_compile)
+        workspace, state, design = frozen_plate(tmp_path, change=add_unsupported)
+    saved = workspace.handoff()['requirements_adapter']
+    assert not any(item['critical'] for item in saved['unsupported'])
+    requirements = None
+    if supplied_requirements:
+        requirements = tmp_path / 'legacy_requirements.json'
+        write_json(requirements, saved['requirements'])
+    before = tree_hashes(workspace.root)
+    with pytest.raises(CadLoopError) as exc:
+        workspace.materialize(base=state['revision'], design_dir=design, requirements=requirements)
+    assert exc.value.code == 'PLANNING_VERIFICATION_UNSUPPORTED'
+    assert any(item['id'] == ('wall' if case == 'one_sided' else 'required_bore')
+               for item in exc.value.details['unsupported'])
+    assert tree_hashes(workspace.root) == before
+    assert workspace.handoff()['requirements_adapter'] == saved
