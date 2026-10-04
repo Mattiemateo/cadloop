@@ -95,13 +95,34 @@ class Project:
         self.requirements().validate_parameters(p)
         return p
 
+    def planning_provenance(self, *, require_current=True):
+        """Only planned projects carry a frozen-intent binding; legacy inputs stay intact."""
+        binding = read_json(self.control / "anchor.json").get("planning")
+        if binding is None:
+            return None
+        from .planning.store import PlanningProject
+        workspace = PlanningProject(self.root)
+        if require_current:
+            with project_lock(self.control):
+                state = workspace.state()
+                if (state["status"] != "FROZEN" or state["revision"] != binding["design_contract_revision"] or
+                        state["contract_hash"] != binding["design_contract_hash"]):
+                    raise CadLoopError("PLANNING_STALE", "CAD belongs to a previous design contract; review and materialize new intent separately",
+                                       authored_against=binding, current_planning_revision=state["revision"])
+                workspace.handoff()
+        return binding
+
     def revision(self):
         self.parameters()
         hashes = tree_hashes(self.design)
         if len(hashes) > 40 or sum((self.design / p).stat().st_size for p in hashes) > 500_000:
             raise CadLoopError("SOURCE_TOO_LARGE", "Source exceeds the v0 project budget")
-        return digest({"design": hashes, "requirements": file_hash(self.root / "requirements.json"),
-                       "environment": versions(), "controller": package_digest()})
+        inputs = {"design": hashes, "requirements": file_hash(self.root / "requirements.json"),
+                  "environment": versions(), "controller": package_digest()}
+        binding = self.planning_provenance(require_current=False)
+        if binding is not None:
+            inputs["planning"] = binding
+        return digest(inputs)
 
     def event(self, kind, data):
         with (self.control / "events.jsonl").open("a") as f:
@@ -116,6 +137,7 @@ class Project:
     def propose(self, proposal: Proposal | dict):
         proposal = Proposal.model_validate(proposal)
         with project_lock(self.control):
+            self.planning_provenance()
             revision = self.revision()
             if revision != proposal.base_revision:
                 raise CadLoopError("STALE_REVISION", "Proposal was based on a different design revision", current_revision=revision)
@@ -190,6 +212,8 @@ class Project:
                                changed=sorted(k for k in set(actual)|set(expected) if actual.get(k) != expected.get(k)))
 
     def latest(self, *, require_current=True):
+        if require_current:
+            self.planning_provenance()
         pointer = self.control / "latest.json"
         if not pointer.exists():
             return None
@@ -237,6 +261,7 @@ class Project:
         if type(timeout) not in (int, float) or not 0 < timeout <= 300:
             raise CadLoopError("INVALID_TIMEOUT", "Worker timeout must be in (0, 300] seconds")
         with project_lock(self.control):
+            binding = self.planning_provenance()
             revision = self.revision()
             req = self.requirements()
             runtime, runtime_error = None, None
@@ -283,8 +308,13 @@ class Project:
             (run / "input").mkdir(parents=True)
             shutil.copytree(self.design, run / "input" / "design", ignore=shutil.ignore_patterns("__pycache__"))
             shutil.copy2(self.root / "requirements.json", run / "input" / "requirements.json")
-            write_json(run / "input" / "meta.json", {"schema_version": 1, "revision": revision,
-                                                     "versions": versions(), "controller_digest": package_digest()})
+            meta = {"schema_version": 1, "revision": revision,
+                    "versions": versions(), "controller_digest": package_digest()}
+            if binding:
+                from .planning.store import PlanningProject
+                meta.update(binding)
+                write_json(run / "input/design_contract.json", PlanningProject(self.root).handoff()["contract"])
+            write_json(run / "input" / "meta.json", meta)
             before = tree_hashes(run / "input")
             stages = []
             report = None
@@ -324,6 +354,8 @@ class Project:
                                      hint=c.edit_hint) for c in req.checks)
                 report = make_report(revision, req, checks)
             report = apply_gate(report, req, outcomes)
+            if binding:
+                report.update(binding)
             write_json(run / "verification" / "report.json", report)
             write_json(run / "execution.json", {"stages": stages, "mode": mode, "runtime": runtime,
                                                  "native_security_warning": mode == "trusted-native"})
@@ -383,13 +415,21 @@ class Project:
     def state(self):
         revision = self.revision()
         latest = self.latest(require_current=False)
-        return {"schema_version": 1, "revision": revision, "parameters": self.parameters(),
+        result = {"schema_version": 1, "revision": revision, "parameters": self.parameters(),
                 "requirements": self.requirements().model_dump(),
                 "latest_feedback": compact(latest[1]) if latest else None,
                 "latest_is_current": bool(latest and latest[1]["revision"] == revision),
                 "capabilities": ["dimension", "through_holes_z", "coaxial", "plane_contact",
                                  "clearance", "all_pairs_no_overlap", "parameter_and_source_patches", "required_parameter_responses"],
                 "engineering_approved": False}
+        binding = self.planning_provenance(require_current=False)
+        if binding:
+            from .planning.store import PlanningProject
+            planning = PlanningProject(self.root).state()
+            result["planning"] = {**binding, "current_revision": planning["revision"], "status": planning["status"],
+                                  "current": planning["status"] == "FROZEN" and planning["revision"] == binding["design_contract_revision"]}
+            result["latest_is_current"] &= result["planning"]["current"]
+        return result
 
     def finish(self, *, mode, timeout=45.):
         with project_lock(self.control):
@@ -414,8 +454,12 @@ class Project:
                      "preview_execution.json", "view_error.json", "derived_from.json"):
             if (run / name).exists():
                 shutil.copy2(run / name, target / ("source_run_receipt.json" if name == "receipt.json" else name))
-        write_json(target / "export_manifest.json", {"revision": report["revision"], "files": tree_hashes(target),
+        manifest = {"revision": report["revision"], "files": tree_hashes(target),
                                                      "geometry_accepted": True, "engineering_approved": False,
                                                      "parametric_accepted": report.get("parametric_accepted"),
-                                                     "task_accepted": accepted(report), "scope": report["scope"]})
+                    "task_accepted": accepted(report), "scope": report["scope"]}
+        binding = self.planning_provenance()
+        if binding:
+            manifest.update(binding)
+        write_json(target / "export_manifest.json", manifest)
         return {**feedback, "exported": True, "export_directory": str(target)}

@@ -6,6 +6,8 @@ A working local CAD feedback harness: generate solids, inspect the **exported ge
 
 **Parameter-response gate:** completion can require measured parameter changes while preserving other interfaces. Docker cache entries include image/policy identity, and previews run in Docker. [Tests and benchmark results](docs/PARAMETRIC_RESULTS.md): 425 tests pass; the six-case synthetic benchmark reduces false accepts from 9 to 0 across three repeats, with measured execution overhead.
 
+**Design planning:** start with a brief, have your Codex/Cursor account agent submit a structured hypothesis, answer up to three ranked questions per round, review front/side/top concept sketches and freeze a revision-bound contract before modeling. The handoff preserves provenance, design freedom and unsupported verification intent; planned CAD remains bound to that contract. [Workflow and offline demo](docs/DESIGN_PLANNING.md). No additional model API is required; planning approval does not replace geometry or engineering validation.
+
 **Original v0.1.1 delivery:** CadQuery 2.8.0 / OpenCascade 7.9.3.1.1 on Linux, Python 3.13.5; Build123d was not exercised in that delivery. The Kerf integration above adds Build123d/Docker evidence. The planned `agentcad` integration remains unimplemented. See `docs/STATUS.md` for historical scope and `docs/KERF.md` for the new work.
 
 **Adversarial audit:** 214 tests passed and 1 optional dependency test skipped in the expanded run. See `AUDIT.md` for reproduced bugs, regression coverage, measured overhead, and limitations. No live-model cost or quality result is claimed.

@@ -30,8 +30,13 @@ def run_scenarios(run: Path, requirements, revision: str, *, mode, timeout, runt
                                     "parameters": values, "runtime": runtime})
         write_json(target / "input/design/parameters.json", values)
         write_json(target / "input/requirements.json", req.model_dump())
-        write_json(target / "input/meta.json", {"schema_version": 1, "revision": scenario_revision,
-                   "nominal_revision": revision, "scenario": scenario.model_dump(), "runtime": runtime})
+        meta = {"schema_version": 1, "revision": scenario_revision,
+                "nominal_revision": revision, "scenario": scenario.model_dump(), "runtime": runtime}
+        nominal_meta = read_json(run / "input/meta.json") if (run / "input/meta.json").exists() else {}
+        binding = {key: value for key, value in nominal_meta.items()
+                   if key in ("design_contract_hash", "design_contract_revision")}
+        meta.update(binding)
+        write_json(target / "input/meta.json", meta)
         before = tree_hashes(target / "input")
         stages = []
         try:
@@ -60,6 +65,9 @@ def run_scenarios(run: Path, requirements, revision: str, *, mode, timeout, runt
             write_json(target / "verification/report.json", report)
         finally:
             shutil.rmtree(target / "tmp", ignore_errors=True)
+        if binding:
+            report.update(binding)
+            write_json(target / "verification/report.json", report)
         write_json(target / "execution.json", {"mode": mode, "runtime": runtime, "stages": stages})
         outcomes.append({"id": scenario.id, "description": scenario.description,
                          "parameters": scenario.parameters, "scenario_sha256": digest(scenario.model_dump()),
