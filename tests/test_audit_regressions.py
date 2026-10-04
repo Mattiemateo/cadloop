@@ -113,7 +113,7 @@ def test_search_does_not_claim_success_when_fresh_validation_fails(tmp_path):
             self.calls=0; self.p={'gap':1}; self.control=tmp_path/'control'
         def parameters(self): return dict(self.p)
         def requirements(self): return self
-        def validate_parameters(self,p): pass
+        def validate_parameters(self,p): return dict(p)
         def revision(self): return 'a'*64
         def propose(self,p): self.p.update(p['parameters'])
         def evaluate(self,**kwargs):

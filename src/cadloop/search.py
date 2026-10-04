@@ -25,12 +25,17 @@ def _search_locked(project, parameter, values, *, mode, fixed, timeout, max_eval
     candidates = []
     requirements = project.requirements()
     for value in values:
-        params = {**base, **fixed, parameter: value}
-        requirements.validate_parameters(params)
+        params = requirements.validate_parameters({**base, **fixed, parameter: value})
         if params not in candidates:
             candidates.append(params)
     records = []
     winner = None
+    restored_final = None
+    def restore_base(reason):
+        changes = {k: v for k, v in base.items() if project.parameters()[k] != v}
+        if changes:
+            project.propose({"base_revision": project.revision(), "parameters": changes,
+                             "reason": reason})
     try:
         for params in candidates:
             changes = {k: v for k, v in params.items() if project.parameters()[k] != v}
@@ -44,26 +49,23 @@ def _search_locked(project, parameter, values, *, mode, fixed, timeout, max_eval
             if accepted(report):
                 winner = params
                 break
+        if winner is None:
+            restore_base("No feasible candidate; restore the starting design.")
+        # Final validation is part of the transaction too: exceptions and
+        # interruptions here must restore the original parameters.
+        final = project.evaluate(mode=mode, timeout=timeout, force=True, render=True)
+        confirmed = winner is not None and accepted(final)
+        if winner is not None and not confirmed:
+            restore_base("Final candidate validation failed; restore the starting design.")
+            restored_final = project.evaluate(mode=mode, timeout=timeout, force=True, render=True)
     except BaseException:
-        changes = {k: v for k,v in base.items() if project.parameters()[k] != v}
-        if changes:
-            project.propose({"base_revision": project.revision(), "parameters": changes,
-                             "reason": "Restore base parameters after interrupted search."})
+        restore_base("Restore base parameters after interrupted search.")
         raise
-    if winner is None:
-        changes = {k: v for k, v in base.items() if project.parameters()[k] != v}
-        if changes:
-            project.propose({"base_revision": project.revision(), "parameters": changes,
-                             "reason": "No feasible candidate; restore the starting design."})
-        final = project.evaluate(mode=mode, timeout=timeout, force=True, render=True)
-    else:
-        # Full fresh evaluation, not a search-run shortcut, produces final evidence.
-        final = project.evaluate(mode=mode, timeout=timeout, force=True, render=True)
-    confirmed = winner is not None and accepted(final)
     status = ("FEASIBLE_CANDIDATE_FOUND" if confirmed else
               "FINAL_VALIDATION_FAILED" if winner is not None else "NO_FEASIBLE_CANDIDATE")
     project.event("parameter_search", {"parameter": parameter, "attempts": records, "found": confirmed,
                                       "final_status": final["status"]})
     return {"status": status, "parameter": parameter,
             "value": winner[parameter] if confirmed else None,
-            "attempts": records, "final": final, "llm_calls": 0}
+            "attempts": records, "final": final, "llm_calls": 0,
+            **({"restored_final": restored_final} if restored_final is not None else {})}

@@ -76,6 +76,9 @@ holds the project lock for the whole search. A hard process kill is not a comple
 rollback transaction.
 A final full evaluation is additional to the candidate evaluations. If it fails,
 `FINAL_VALIDATION_FAILED` and exit 2 are returned; no feasible winner is claimed.
+The original parameters are restored and reevaluated in that case. `final` retains
+the rejected candidate's fresh validation evidence; `restored_final` holds the
+restored design's feedback. This restoration adds one further evaluation.
 
 ## finish PROJECT MODE
 

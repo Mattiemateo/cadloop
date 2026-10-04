@@ -150,6 +150,21 @@ def test_equivalent_number_parameter_types_remain_a_noop(project):
     assert error.value.code == "NO_CHANGE"
 
 
+def test_search_returns_canonical_integer_candidate(tmp_path, monkeypatch):
+    from cadloop.search import search_parameter
+    project = count_project(tmp_path)
+    monkeypatch.setattr(project, "evaluate", lambda **kwargs: {
+        "geometry_accepted": True, "task_accepted": True, "run_id": "candidate",
+        "revision": project.revision(), "status": "GEOMETRY_ACCEPTED",
+        "summary": {}, "blocker_ids": [],
+    })
+    searched = search_parameter(project, "size", [3.0], mode="trusted-native")
+    assert searched["status"] == "FEASIBLE_CANDIDATE_FOUND"
+    assert type(searched["value"]) is int
+    assert type(searched["attempts"][0]["value"]) is int
+    assert type(project.parameters()["size"]) is int
+
+
 @pytest.mark.parametrize("timeout", [True, False, "45", None, float("nan"), float("inf")])
 def test_evaluation_rejects_invalid_timeout_types_before_writing_a_run(project, timeout):
     with pytest.raises(CadLoopError) as error:

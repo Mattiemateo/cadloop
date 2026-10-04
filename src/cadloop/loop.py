@@ -1,6 +1,7 @@
 """Small JSON-action repair loop. No multi-agent framework; no hidden retries."""
 from __future__ import annotations
 import json
+import math
 import os
 from pathlib import Path
 from typing import Literal
@@ -149,8 +150,12 @@ A conservative byte-count reservation is a guardrail, not a billing guarantee.
 
 
 def repair_loop(project, provider, *, mode, max_steps=6, allow_source_edits=False, timeout=45., include_source=None):
-    if not 1 <= max_steps <= 12:
+    if type(max_steps) is not int or not 1 <= max_steps <= 12:
         raise CadLoopError("STEP_LIMIT", "max_steps must be in [1,12]")
+    if mode not in ("trusted-native", "docker"):
+        raise CadLoopError("EXECUTION_MODE_REQUIRED", "Explicitly select trusted-native or Docker execution")
+    if type(timeout) not in (int, float) or not math.isfinite(timeout) or not 0 < timeout <= 300:
+        raise CadLoopError("INVALID_TIMEOUT", "Worker timeout must be in (0, 300] seconds")
     if allow_source_edits and mode != "docker":
         raise CadLoopError("SANDBOX_REQUIRED", "Managed model source edits require Docker; native managed loops are parameter-only")
     session = project.control / "sessions"
@@ -163,11 +168,12 @@ def repair_loop(project, provider, *, mode, max_steps=6, allow_source_edits=Fals
         state = {"status": "RUNNING", "steps": [], "mode": mode,
                  "is_replay": provider.is_replay, "initial_revision": project.revision()}
         write_json(progress_path, state)
-        feedback = project.evaluate(mode=mode, timeout=timeout, render=False)
-        stale_progress = 0
-        previous = tuple(feedback["progress_key"])
+        feedback = None
         final_status = "STEP_LIMIT"
         try:
+            feedback = project.evaluate(mode=mode, timeout=timeout, render=False)
+            stale_progress = 0
+            previous = tuple(feedback["progress_key"])
             for step in range(max_steps):
                 if accepted(feedback):
                     final_status = feedback["status"]
@@ -207,10 +213,13 @@ def repair_loop(project, provider, *, mode, max_steps=6, allow_source_edits=Fals
                 final = project.finish(mode=mode, timeout=timeout)
                 feedback = final
                 final_status = final["status"]
-        except Exception as e:
-            final_status = getattr(e, "code", "LOOP_ERROR")
+        except BaseException as e:
+            final_status = getattr(e, "code", "LOOP_ERROR") if isinstance(e, Exception) else "INTERRUPTED"
             state["error"] = str(e)
-        state.update({"status": final_status, "final_feedback": feedback, "usage": provider.usage(),
-                      "note": "Replay validates orchestration, not LLM competence. Engineering approval is never automatic."})
-        write_json(progress_path, state)
+            if not isinstance(e, Exception):
+                raise
+        finally:
+            state.update({"status": final_status, "final_feedback": feedback, "usage": provider.usage(),
+                          "note": "Replay validates orchestration, not LLM competence. Engineering approval is never automatic."})
+            write_json(progress_path, state)
         return state
