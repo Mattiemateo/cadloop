@@ -44,3 +44,41 @@ For Codex, read docs/CODEX_ACCOUNT.md; for Cursor, read docs/CURSOR_ACCOUNT.md.
 Do not switch hosts or configure/start the separate API-provider loop unless the
 user explicitly requests it. Cursor uses a Cursor account, not ChatGPT entitlement. Do not read, copy, commit or mount account tokens into generated-code
 workers. The included CADGenBench document is a protocol, not a benchmark result.
+
+## Planning from a short request
+
+For new work that starts with a natural-language brief, use the planning workflow
+in [docs/DESIGN_PLANNING.md](docs/DESIGN_PLANNING.md). Existing projects with
+reviewed requirements/source and no planning metadata keep their current flow.
+
+1. Run `design-init` in an empty workspace; it needs no CAD source. Read
+   `design-context` before constructing a `PlanningProposal`.
+2. Expand the intent, components, interfaces and verification intent. Use
+   canonical parameter IDs with explicit `FIXED`, `BOUNDED`, `DERIVED`, `FREE` or
+   `OPTIMIZED` modes and source provenance. Treat cosmetic choices and declared
+   optimization freedom as design freedom rather than missing human input.
+3. Submit `design-propose` with the exact current base revision. Preserve the
+   controller-owned brief, task, sources, decisions and status. Do not edit
+   `.cadloop/planning/` or mint new user/approved-reference authority.
+4. Inspect `design-audit`, `design-questions` and `design-render`. Show the user
+   the interpretation, current front/side/top SVGs and up to three ranked
+   questions. Record only the options the user explicitly selected with
+   `design-answer`; never reinterpret a letter by changing its predefined updates.
+5. Optionally revise the hypothesis once. Reaudit and rerender the resulting
+   revision. Unresolved critical issues remain blocking after two review rounds.
+6. Call `design-freeze` only after the user confirms the exact current rendered
+   interpretation. A draft proposal's successful exit is not freeze acceptance.
+7. Read `design-handoff` and the frozen contract before CAD authoring. The handoff
+   preserves all unsupported checks and engineering/process blockers. Never
+   bypass unresolved critical planning issues by inventing a dimension in CAD
+   source, and never substitute an implementation choice for a user requirement.
+8. Resolve mandatory unsupported geometric intent through reviewed planning
+   revisions. Then use `design-materialize` to import reviewed CAD source into
+   the frozen workspace and continue the ordinary build/verify/repair/finish
+   workflow in the authorized execution profile.
+
+Planning revisions and downstream CAD revisions are distinct. Read the relevant
+state before each mutation. Reopening the design preserves the old freeze and
+marks materialized CAD stale; do not rebind that CAD to a new contract hash.
+Use a new workspace for CAD belonging to changed intent. Account credentials,
+live-model costs and a second autonomous provider loop are not planning inputs.

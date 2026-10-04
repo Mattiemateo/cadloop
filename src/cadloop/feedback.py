@@ -75,7 +75,7 @@ def compact(report, *, detail_limit=8):
             brief['execution']={key:ev['execution'][key] for key in ('stage','exit_code','timed_out','stderr_tail') if key in ev['execution']}
         details.append({'id':c['id'],'status':c['status'],'code':c['code'],
                         'message':c['message'],'measurement':brief,'edit_hint':c['edit_hint']})
-    return {'schema_version':1,'revision':report['revision'],'status':report['status'],
+    packet = {'schema_version':1,'revision':report['revision'],'status':report['status'],
             'geometry_accepted':report['geometry_accepted'],'engineering_approved':False,
             'parametric_accepted':report.get('parametric_accepted'),
             'task_accepted':report.get('task_accepted',report['geometry_accepted']),
@@ -85,3 +85,7 @@ def compact(report, *, detail_limit=8):
             'inspect_instruction':'Use inspect --check CHECK_ID for full evidence.',
             'suggested_view':'section_xz','units':'mm','progress_key':progress_key(report),
             'engineering_blockers':report['engineering_blockers']}
+    for key in ('design_contract_hash', 'design_contract_revision'):
+        if key in report:
+            packet[key] = report[key]
+    return packet

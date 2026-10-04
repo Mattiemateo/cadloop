@@ -1,0 +1,1 @@
+Design a compact removable mount for a 42 x 42 mm motor on 15 x 15 mm extrusion. The motor has a 31 mm square M3 mounting pattern and needs a 24 mm central shaft clearance. Print in PETG. Prefer no supports.

@@ -33,6 +33,8 @@ def execution_args(p):
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="cadloop", description="CAD generation with independent, revision-bound geometric feedback")
     sub = parser.add_subparsers(dest="command", required=True)
+    from .planning.cli import add_commands
+    add_commands(sub)
     p = sub.add_parser("doctor", help="Inspect installed CAD runtimes; performs no downloads")
     p = sub.add_parser("init", help="Create a deliberately broken plate-stack fixture")
     p.add_argument("project", type=Path)
@@ -86,6 +88,11 @@ def main(argv=None):
     p.add_argument("kind", choices=["action", "proposal"])
     a = parser.parse_args(argv)
     try:
+        if a.command.startswith("design-"):
+            from .planning.cli import run_command
+            out, exit_code = run_command(a)
+            print(out if isinstance(out, str) else json.dumps(out, indent=2, allow_nan=False))
+            return exit_code
         mode = "trusted-native" if getattr(a, "trusted_native", False) else "docker" if getattr(a, "docker", False) else None
         if a.command == "doctor":
             import shutil
