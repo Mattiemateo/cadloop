@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import sys
 import importlib.util
+import subprocess
 from .project import Project
 from .contracts import Proposal, Action
 from .util import read_json, write_json, versions, strict_loads
@@ -35,6 +36,12 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command", required=True)
     from .planning.cli import add_commands
     add_commands(sub)
+    p = sub.add_parser("start", help="Open a supervised Codex or Cursor account session")
+    p.add_argument("--host", choices=("codex", "cursor"), default="codex")
+    p.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[2],
+                   help="CADLoop checkout; defaults to this editable installation's checkout")
+    p.add_argument("--model", help="An available model from the selected host account")
+    p.add_argument("--dry-run", action="store_true", help="Show the launch command without checking login or starting inference")
     p = sub.add_parser("doctor", help="Inspect installed CAD runtimes; performs no downloads")
     p = sub.add_parser("init", help="Create a deliberately broken plate-stack fixture")
     p.add_argument("project", type=Path)
@@ -88,6 +95,22 @@ def main(argv=None):
     p.add_argument("kind", choices=["action", "proposal"])
     a = parser.parse_args(argv)
     try:
+        if a.command == "start":
+            repo = a.repo.expanduser().resolve()
+            launcher = repo / "scripts" / f"start_{a.host}.py"
+            if not launcher.is_file():
+                raise CadLoopError("ACCOUNT_LAUNCHER_UNAVAILABLE",
+                                   "Use cadloop start --repo /path/to/cadloop with a checkout containing the account launchers")
+            command = [sys.executable, str(launcher), "--repo", str(repo)]
+            if a.model is not None:
+                command.extend(["--model", a.model])
+            if a.dry_run:
+                command.append("--dry-run")
+            try:
+                code = subprocess.run(command, cwd=repo, check=False).returncode
+                return 128 - code if code < 0 else code
+            except KeyboardInterrupt:
+                return 130
         if a.command.startswith("design-"):
             from .planning.cli import run_command
             out, exit_code = run_command(a)

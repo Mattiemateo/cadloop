@@ -31,12 +31,16 @@ installation guide below. Complete the browser login locally:
 codex login
 codex login status
 cd /path/to/cadloop
-python3 scripts/start_codex.py --dry-run
-python3 scripts/start_codex.py
+source .venv/bin/activate
+cadloop start --dry-run
+cadloop start
 ```
 
 Select the Business workspace where available and verify it in Codex's account
-UI. Optional model selection: `python3 scripts/start_codex.py --model MODEL_ID`.
+UI. Optional model selection: `cadloop start --model MODEL_ID`.
+`cadloop start` delegates to the existing account launcher. With `cadloop` on
+PATH, it works from any directory; use `--repo /path/to/cadloop` for another
+checkout. The original `python3 scripts/start_codex.py` command still works.
 Use an actually available account model; this add-on does not invent a default.
 If an old API-key login is active, sign out and sign in with ChatGPT locally.
 Never upload `~/.codex/auth.json` or copy its tokens into CADLoop.

@@ -19,10 +19,30 @@ The included synthetic fixture starts with a missing spacer and an 8 mm plate ga
 Both launchers are included. Use one coding host with CADLoop's local tools;
 no second API-backed model loop is needed.
 
+Start a session with `cadloop start` (Codex), or `cadloop start --host cursor`.
+Use `cadloop start --dry-run` to preview the command without starting inference.
+The command opens this CADLoop checkout even when called from another directory;
+`--repo /path/to/cadloop` selects a different checkout. Optional: `--model MODEL_ID`.
+
+After [bootstrapping](#run-the-demo), activate `.venv` to put `cadloop` on PATH:
+
+```sh
+source .venv/bin/activate
+cadloop start
+```
+
+For a persistent shortcut without activating the venv, link the existing entry
+point into a directory already on your PATH (do not replace an existing command):
+
+```sh
+mkdir -p ~/.local/bin
+ln -s "$PWD/.venv/bin/cadloop" ~/.local/bin/cadloop
+```
+
 | Host | Sign in locally | Launch from this repository |
 |---|---|---|
-| Codex | `codex login` | `python3 scripts/start_codex.py` |
-| Cursor CLI | `agent login` | `python3 scripts/start_cursor.py` |
+| Codex | `codex login` | `cadloop start` |
+| Cursor CLI | `agent login` | `cadloop start --host cursor` |
 
 Read the [Codex account guide](docs/CODEX_ACCOUNT.md) or
 [Cursor account guide](docs/CURSOR_ACCOUNT.md). Cursor uses its own account,
